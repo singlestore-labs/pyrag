@@ -1,3 +1,16 @@
+# # PyRAG Live Data
+
+# This notebook gets files from a S3 bucket, creates embeddings and inserts them into the database.
+
+# Supported file types: csv, json, pdf, txt
+# Supported S3 actions: upload, update, delete
+
+# - Loading a new file, a new table is created.
+# - Updating a file, a table is deleted and created anew.
+# - Deleting a file, a table is deleted.
+
+# %pip install singlestoredb boto3 transformers torch pandas==2.1.4 semantic-text-splitter python-dotenv PyPDF2 --quiet
+
 import io
 import os
 import re
@@ -13,24 +26,20 @@ from dotenv import load_dotenv
 from PyPDF2 import PdfReader
 from semantic_text_splitter import CharacterTextSplitter
 
-# pip install singlestoredb boto3 transformers torch pandas==2.1.4 semantic-text-splitter python-dotenv PyPDF2 --quiet
 
 load_dotenv()
 
 connection_url = os.environ.get('DB_CONNECTION_URL') or ''
 db_name = os.environ.get('DB_NAME') or connection_url.split('/')[-1] or 'pyrag'
-
 aws_access_key_id = os.environ.get('AWS_ACCESS_KEY_ID')
 aws_secret_access_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
 aws_bucket_name = os.environ.get('AWS_BUCKET_NAME')
 
 db_connection = s2.connect(connection_url)
 s3 = boto3.client('s3', aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
-
 model_name = 'sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2'
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModel.from_pretrained(model_name)
-
 text_splitter = CharacterTextSplitter(trim_chunks=False)
 
 
@@ -145,6 +154,11 @@ def file_content_to_df(content: Any, extension: str):
         for page in reader.pages:
             text += page.extract_text()
         df = pd.DataFrame(split_text(text), columns=['text'])
+        assign_created_at(df)
+        return df
+
+    if extension == 'txt':
+        df = pd.DataFrame(split_text(content.decode('utf-8')), columns=['text'])
         assign_created_at(df)
         return df
 
