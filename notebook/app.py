@@ -226,4 +226,18 @@ def main():
             continue
 
 
+def semantic_search(query: str, table_name: str):
+    query_embedding = create_embedding(query).tobytes().hex()
+    with db_connection.cursor() as cursor:
+        cursor.execute(f'''
+            SELECT content, v <*> X'{query_embedding}' AS similarity
+            FROM {table_name}
+            ORDER BY similarity USE INDEX (vector_index) DESC
+            LIMIT 5
+        ''')
+        return cursor.fetchall()
+
+
 main()
+
+# print(semantic_search('query', 'table_name'))
