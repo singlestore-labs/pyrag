@@ -74,17 +74,34 @@ def drop_table(table_name: str):
         cursor.fetchall()
 
 
-def is_table_valid(table_name: str, created_at: datetime):
+def get_table_names(table_name: str | None = None):
+    try:
+        with db_connection.cursor() as cursor:
+            query = f'''
+              SELECT TABLE_NAME
+              FROM INFORMATION_SCHEMA.TABLES
+              WHERE TABLE_SCHEMA = '{db_name}'
+            '''
+
+            if table_name:
+                query += f" AND TABLE_NAME = '{table_name}'"
+
+            cursor.execute(query)
+            result = cursor.fetchall()
+
+            if result:
+                return [i[0] if type(i) == tuple else '' for i in result]
+
+            return []
+    except Exception as e:
+        print(e)
+        return []
+
+
+def is_table_up_to_date(table_name: str, created_at: datetime):
     def is_exists():
         try:
-            with db_connection.cursor() as cursor:
-                cursor.execute(f'''
-                  SELECT TABLE_NAME
-                  FROM INFORMATION_SCHEMA.TABLES
-                  WHERE TABLE_SCHEMA = '{db_name}'
-                  AND TABLE_NAME = '{table_name}'
-                ''')
-                return bool(len(cursor.fetchall()))
+            return bool(len(get_table_names(table_name)))
         except Exception as e:
             print(e)
             return False
@@ -98,10 +115,9 @@ def is_table_valid(table_name: str, created_at: datetime):
                 result = cursor.fetchone()
 
                 if not type(result) == tuple:
-                    return
+                    return False
 
                 return result[0] >= created_at
-
         except Exception as e:
             print(e)
             return False
@@ -201,11 +217,15 @@ def s3_process_files(on_file):
 
 
 def main():
+    existed_table_names = get_table_names()
+    file_table_names = []
+
     def on_file(file):
         table_name = format_file_name(file['name'])
+        file_table_names.append(table_name)
 
-        if is_table_valid(table_name, file['updated_at']):
-            print(table_name, 'is valid')
+        if is_table_up_to_date(table_name, file['updated_at']):
+            print(table_name, 'is up to date')
             return
 
         df = file_content_to_df(file['content'], get_file_extension(file['name']))
@@ -217,6 +237,7 @@ def main():
             df.at[i, 'created_at'] = file['updated_at']
 
         insert_df(prepare_df(df, customize_row=customize_row, reserved_keys=['created_at']), table_name)
+        print(table_name, 'updated' if table_name in existed_table_names else 'inserted')
 
     for file_process in [s3_process_files]:
         try:
@@ -224,6 +245,11 @@ def main():
         except Exception as e:
             print(e)
             continue
+
+    for existed_table_name in existed_table_names:
+        if not existed_table_name in file_table_names:
+            drop_table(existed_table_name)
+            print(existed_table_name, 'deleted')
 
 
 def semantic_search(query: str, table_name: str):
