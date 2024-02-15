@@ -6,12 +6,14 @@ import torch
 import numpy as np
 import pandas as pd
 import singlestoredb as s2
-from typing import Callable, Hashable, List, Optional
+from typing import Any, Callable, Hashable, List, Optional
 from transformers import AutoModel, AutoTokenizer
+from datetime import datetime, timezone
 from dotenv import load_dotenv
+from PyPDF2 import PdfReader
 from semantic_text_splitter import CharacterTextSplitter
 
-# pip install singlestoredb boto3 transformers torch semantic-text-splitter python-dotenv --quiet
+# pip install singlestoredb boto3 transformers torch pandas==2.1.4 semantic-text-splitter python-dotenv PyPDF2 --quiet
 
 load_dotenv()
 
@@ -32,6 +34,21 @@ model = AutoModel.from_pretrained(model_name)
 text_splitter = CharacterTextSplitter(trim_chunks=False)
 
 
+def split_text(text: str):
+    return text_splitter.chunks(text, 2048)
+
+
+def get_file_extension(name: str):
+    return os.path.splitext(name)[1][1:]
+
+
+def create_embedding(input):
+    input_ids = tokenizer(input, padding=True, truncation=True, return_tensors="pt")
+    with torch.no_grad():
+        embedding = model(**input_ids).last_hidden_state.mean(dim=1).squeeze().tolist()
+        return np.array(embedding, dtype='<f4')
+
+
 def create_table(table_name: str):
     with db_connection.cursor() as cursor:
         cursor.execute(f'''
@@ -45,7 +62,7 @@ def create_table(table_name: str):
 
         cursor.execute(f'''
           ALTER TABLE {table_name} ADD VECTOR INDEX vector_index (v)
-          INDEX_OPTIONS '{"index_type": "IVF_PQ", "nlist": 4000}'
+          INDEX_OPTIONS '{{"index_type": "IVF_PQ", "nlist": 4000}}'
         ''')
 
         cursor.fetchall()
@@ -57,9 +74,7 @@ def drop_table(table_name: str):
         cursor.fetchall()
 
 
-def is_table_valid(table_name: str, last_created_at: str):
-    print(table_name)
-
+def is_table_valid(table_name: str, created_at: datetime):
     def is_exists():
         try:
             with db_connection.cursor() as cursor:
@@ -81,8 +96,12 @@ def is_table_valid(table_name: str, last_created_at: str):
                   SELECT created_at FROM {table_name} LIMIT 1
                 ''')
                 result = cursor.fetchone()
-                crated_at = result[0] if type(result) == tuple else ''
-                print(crated_at)
+
+                if not type(result) == tuple:
+                    return
+
+                return result[0] >= created_at
+
         except Exception as e:
             print(e)
             return False
@@ -90,24 +109,28 @@ def is_table_valid(table_name: str, last_created_at: str):
     return is_exists() and is_latest()
 
 
-def create_embedding(input):
-    input_ids = tokenizer(input, padding=True, truncation=True, return_tensors="pt")
-    with torch.no_grad():
-        embedding = model(**input_ids).last_hidden_state.mean(dim=1).squeeze().tolist()
-        return np.array(embedding, dtype='<f4')
+def file_content_to_df(content: Any, extension: str):
+    def assign_created_at(df: pd.DataFrame):
+        df['created_at'] = datetime.now().astimezone(timezone.utc).replace(tzinfo=None)
 
-
-def split_text(text: str):
-    return text_splitter.chunks(text, 2048)
-
-
-def get_file_extension(name: str):
-    return os.path.splitext(name)[1][1:]
-
-
-def file_content_to_df(content: str, extension: str):
     if extension == 'csv':
-        return pd.read_csv(io.StringIO(content))
+        df = pd.read_csv(io.StringIO(content.decode('utf-8')))
+        assign_created_at(df)
+        return df
+
+    if extension == 'json':
+        df = pd.read_json(io.StringIO(content.decode('utf-8')))
+        assign_created_at(df)
+        return df
+
+    if extension == 'pdf':
+        text = ''
+        reader = PdfReader(io.BytesIO(content))
+        for page in reader.pages:
+            text += page.extract_text()
+        df = pd.DataFrame(split_text(text), columns=['text'])
+        assign_created_at(df)
+        return df
 
     raise ValueError('Unsupported file format')
 
@@ -132,7 +155,7 @@ def prepare_df(
 def insert_df(df: pd.DataFrame, table_name: str):
     with db_connection.cursor() as cursor:
         cursor.executemany(f'''
-            INSERT INTO {table_name} (id, content, v, created_at)
+            INSERT INTO {table_name} (id, created_at, content, v)
             VALUES (%s, %s, %s, %s)
         ''', df.to_records(index=True).tolist())
         cursor.fetchall()
@@ -142,7 +165,7 @@ def format_file_name(file_name):
     return re.sub(r'\W', '_', file_name)
 
 
-def get_s3_files():
+def s3_process_files(on_file):
     def get_files():
         try:
             response = s3.list_objects_v2(Bucket=aws_bucket_name)
@@ -159,41 +182,48 @@ def get_s3_files():
     def get_file_content(key: str):
         try:
             obj = s3.get_object(Bucket=aws_bucket_name, Key=key)
-            content = obj['Body'].read().decode('utf-8')
+            content = obj['Body'].read()
             return content
         except Exception as e:
             print(e)
             return ''
 
-    files = []
     for file in get_files():
         file_name = file['Key']
 
-        files.append({
+        on_file({
             'name': file_name,
             'content': get_file_content(file_name),
-            'updated_at': file['LastModified']
+            'updated_at': datetime.strptime(
+                str(file['LastModified']), '%Y-%m-%d %H:%M:%S%z'
+            ).astimezone(timezone.utc).replace(tzinfo=None)
         })
-
-    return files
 
 
 def main():
-    files = [*get_s3_files()][1:]
-
-    for file in files:
+    def on_file(file):
         table_name = format_file_name(file['name'])
 
         if is_table_valid(table_name, file['updated_at']):
-            continue
+            print(table_name, 'is valid')
+            return
 
         df = file_content_to_df(file['content'], get_file_extension(file['name']))
 
-        def customize_row(i: Hashable, row: pd.Series, df: pd.DataFrame):
-            df.at[i, 'created_at'] = str(file['updated_at'])
-
+        drop_table(table_name)
         create_table(table_name)
+
+        def customize_row(i: Hashable, _, df: pd.DataFrame):
+            df.at[i, 'created_at'] = file['updated_at']
+
         insert_df(prepare_df(df, customize_row=customize_row, reserved_keys=['created_at']), table_name)
+
+    for file_process in [s3_process_files]:
+        try:
+            file_process(on_file)
+        except Exception as e:
+            print(e)
+            continue
 
 
 main()
