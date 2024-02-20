@@ -1,0 +1,20 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "PyRAG"
+version = "0.0.1"
+authors = [{ name="SingleStore", email="support@singlestore.com" }]
+description = "A Python library that makes it easy to get started with RAG applications with SingleStore."
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://gitlab.com/singlestore/marketing/pyrag"
+Issues = "https://gitlab.com/singlestore/marketing/pyrag/-/issues"
