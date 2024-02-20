@@ -9,23 +9,21 @@
 # - Updating a file, a table is deleted and created anew.
 # - Deleting a file, a table is deleted.
 
-# %pip install singlestoredb boto3 transformers torch pandas==2.1.4 semantic-text-splitter python-dotenv PyPDF2 --quiet
+# %pip install singlestoredb boto3 transformers pandas==2.1.4 semantic-text-splitter python-dotenv PyPDF2 langchain sentence_transformers datetime --upgrade --quiet
 
 import io
 import os
 import re
 import boto3
-import torch
 import numpy as np
 import pandas as pd
 import singlestoredb as s2
 from typing import Any, Callable, Hashable, List, Optional
-from transformers import AutoModel, AutoTokenizer
 from datetime import datetime, timezone
 from dotenv import load_dotenv
 from PyPDF2 import PdfReader
 from semantic_text_splitter import CharacterTextSplitter
-
+from langchain_community.embeddings import HuggingFaceEmbeddings
 
 load_dotenv()
 
@@ -37,10 +35,8 @@ aws_bucket_name = os.environ.get('AWS_BUCKET_NAME')
 
 db_connection = s2.connect(connection_url)
 s3 = boto3.client('s3', aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
-model_name = 'sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2'
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModel.from_pretrained(model_name)
 text_splitter = CharacterTextSplitter(trim_chunks=False)
+embedding_model = HuggingFaceEmbeddings()
 
 
 def split_text(text: str):
@@ -52,10 +48,7 @@ def get_file_extension(name: str):
 
 
 def create_embedding(input):
-    input_ids = tokenizer(input, padding=True, truncation=True, return_tensors="pt")
-    with torch.no_grad():
-        embedding = model(**input_ids).last_hidden_state.mean(dim=1).squeeze().tolist()
-        return np.array(embedding, dtype='<f4')
+    return np.array(embedding_model.embed_query(input), dtype='<f4')
 
 
 def create_table(table_name: str):
@@ -65,7 +58,7 @@ def create_table(table_name: str):
             id INT AUTO_INCREMENT PRIMARY KEY,
             content LONGTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
             created_at DATETIME,
-            v VECTOR(384) NOT NULL
+            v VECTOR(768) NOT NULL
           )
         ''')
 
