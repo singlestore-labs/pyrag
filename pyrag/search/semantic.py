@@ -1,7 +1,6 @@
-import numpy as np
 from typing import Optional
-from pyrag.db.connection import DBConnection
-from pyrag.embeddings.create import CreateEmbeddings, EmbeddingInput
+from ..db.typing import DBConnection
+from ..embeddings.typing import CreateEmbeddings, EmbeddingInput
 
 
 def semantic_search_factory(db_connection: DBConnection, create_embeddings: CreateEmbeddings):

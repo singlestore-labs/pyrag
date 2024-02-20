@@ -1,8 +1,6 @@
 import singlestoredb as s2
-from singlestoredb.connection import Connection
-
-DBConnection = Connection
+from pyrag.db.typing import DBConnection
 
 
-def connect(connection_url: str):
+def connect(connection_url: str) -> DBConnection:
     return s2.connect(connection_url)
