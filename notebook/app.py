@@ -15,7 +15,6 @@ import io
 import os
 import re
 import boto3
-import numpy as np
 import pandas as pd
 import singlestoredb as s2
 from typing import Any, Callable, Hashable, List, Optional
@@ -48,7 +47,7 @@ def get_file_extension(name: str):
 
 
 def create_embedding(input):
-    return np.array(embedding_model.embed_query(input), dtype='<f4')
+    return embedding_model.embed_query(input)
 
 
 def create_table(table_name: str):
@@ -167,7 +166,7 @@ def prepare_df(
         content = row.to_json()
         df.at[i, 'content'] = content
         embedding = create_embedding(content)
-        df.at[i, 'embedding'] = str(embedding.tolist())
+        df.at[i, 'embedding'] = str(embedding)
 
         if customize_row:
             customize_row(i, row, df)
@@ -259,11 +258,12 @@ def main():
             print(existed_table_name, 'deleted')
 
 
-def semantic_search(query: str, table_name: str):
-    query_embedding = create_embedding(query).tobytes().hex()
+def semantic_search(table_name: str, query: str,):
+    query_embedding = create_embedding(query)
+    v_length = len(query_embedding)
     with db_connection.cursor() as cursor:
         cursor.execute(f'''
-            SELECT content, v <*> X'{query_embedding}' AS similarity
+            SELECT content, v <*> '{query_embedding}' :> VECTOR({v_length}) AS similarity
             FROM {table_name}
             ORDER BY similarity USE INDEX (vector_index) DESC
             LIMIT 5
@@ -273,4 +273,4 @@ def semantic_search(query: str, table_name: str):
 
 main()
 
-# print(semantic_search('query', 'table_name'))
+print(semantic_search('THE_STORY_THE_FIELD_GUIDE_pdf', 'concepts at the heart of Data Science'))

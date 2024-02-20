@@ -7,17 +7,18 @@ def semantic_search_factory(db_connection: DBConnection, create_embeddings: Crea
     def semantic_search(
             table_name: str,
             input: EmbeddingInput,
-            select: Optional[str] = '*',
+            select: Optional[str] = 'content',
             vector_column_name: Optional[str] = 'v',
             as_name: Optional[str] = 'similarity',
             index_name: Optional[str] = 'vector_index',
             limit: Optional[int] = 5
     ):
-        input_embedding = create_embeddings(input)[0].tobytes().hex()
+        input_embedding = create_embeddings(input)[0]
+        v_length = len(input_embedding)
 
         with db_connection.cursor() as cursor:
             query = f'''
-                SELECT {select}, {vector_column_name} <*> X'{input_embedding}' AS {as_name}
+                SELECT {select}, {vector_column_name} <*> '{input_embedding}' :> VECTOR({v_length}) AS {as_name}
                 FROM {table_name}
             '''
 
