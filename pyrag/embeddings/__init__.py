@@ -1,3 +1,3 @@
 from .create import *
 
-__all__ = ['CreateEmbeddings', 'create_factory']
+__all__ = ['EmbeddingModelName', 'CreateEmbeddings', 'create_factory']

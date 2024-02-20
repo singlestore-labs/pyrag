@@ -1,10 +1,13 @@
-from typing import List
+from typing import List, Optional
 from langchain_openai import OpenAIEmbeddings
 
 models = ['text-embedding-3-small', 'text-embedding-3-large', 'text-embedding-ada-002']
 
 
-def create_factory(model_name=models[0]):
+def create_factory(model_name: Optional[str] = models[0]):
+    if not model_name:
+        raise ValueError('model_name is required')
+
     model = OpenAIEmbeddings(model=model_name)
 
     def create(input: str | List[str]):
