@@ -1,4 +1,5 @@
 from typing import List
+from numpy import array
 from langchain_community.embeddings import HuggingFaceEmbeddings
 
 
@@ -15,6 +16,6 @@ def create_factory():
         else:
             raise ValueError('Input must have the type of str or List[str]')
 
-        return model.embed_documents(input_list)
+        return [array(i, dtype='<f4') for i in model.embed_documents(input_list)]
 
     return create
