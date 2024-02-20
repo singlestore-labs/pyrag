@@ -1,3 +1,3 @@
 from .connection import *
 
-__all__ = ['connect']
+__all__ = ['DBConnection', 'connect']
