@@ -1,14 +1,14 @@
 from abc import ABC, abstractmethod
 from typing import Optional
-from pyrag.db.typing import DBConnection
-from pyrag.embeddings.model import EmbeddingsModel
+from pyrag.db.database import Database
+from pyrag.embeddings.embeddings import Embeddings
 from pyrag.search.typing import SearchInput, SearchResult
 
 
 class SearchCreator(ABC):
-    def __init__(self, db_connection: DBConnection, embeddings_model: EmbeddingsModel):
-        self.db_connection = db_connection
-        self.embeddings_model = embeddings_model
+    def __init__(self, db: Database, embeddings: Embeddings):
+        self.db = db
+        self.embeddings = embeddings
 
     @abstractmethod
     def __call__(

@@ -1,18 +1,18 @@
 from typing import Optional
-from pyrag.db.typing import DBConnection
-from pyrag.embeddings.model import EmbeddingsModel
+from pyrag.db.database import Database
+from pyrag.embeddings.embeddings import Embeddings
 from pyrag.search.semantic import SemanticSearch
 
 
-class SearchModel():
+class Search():
     def __init__(
         self,
-        db_connection: DBConnection,
-        embeddings_model: EmbeddingsModel,
+        db: Database,
+        embeddings: Embeddings,
         search_name: Optional[str] = None
     ):
         if search_name == 'semantic':
-            self.search = SemanticSearch(db_connection, embeddings_model)
+            self.search = SemanticSearch(db, embeddings)
 
         if not self.search:
             raise ValueError('Unsupported search')

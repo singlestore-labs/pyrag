@@ -14,10 +14,10 @@ class SemanticSearch(SearchCreator):
         as_name: Optional[str] = 'similarity',
         index_name: Optional[str] = 'vector_index',
     ):
-        input_embedding = self.embeddings_model.embed(input)[0]
+        input_embedding = self.embeddings.embed(input)[0]
         v_length = len(input_embedding)
 
-        with self.db_connection.cursor() as cursor:
+        with self.db.cursor() as cursor:
             query = f'''
                 SELECT {select}, {vector_column_name} <*> '{input_embedding}' :> VECTOR({v_length}) AS {as_name}
                 FROM {table_name}

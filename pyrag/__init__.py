@@ -1,9 +1,10 @@
 import os
 from typing import Optional
-from pyrag import db
-from pyrag.embeddings.model import EmbeddingsModel
+from pyrag.chat.manager import ChatManager
+from pyrag.db.database import Database
+from pyrag.embeddings.embeddings import Embeddings
 from pyrag.embeddings.typing import Embedder, EmbeddingModelName
-from pyrag.search.model import SearchModel
+from pyrag.search.search import Search
 
 
 class PyRAG:
@@ -17,8 +18,10 @@ class PyRAG:
         if openai_api_key:
             os.environ['OPENAI_API_KEY'] = openai_api_key
 
-        self.db_connection = db.connect(connection_url)
-        embeddings_model = EmbeddingsModel(embedding_model_name, embedder)
-        self.create_embeddings = embeddings_model.embed
-        semantic_search_model = SearchModel(self.db_connection, embeddings_model, 'semantic')
-        self.semantic_search = semantic_search_model.search
+        self.db = Database(connection_url)
+        embeddings = Embeddings(embedding_model_name, embedder)
+        self.create_embeddings = embeddings.embed
+        semantic_search = Search(self.db, embeddings, 'semantic')
+        self.semantic_search = semantic_search.search
+        chat_manager = ChatManager(self.db, embeddings, self.semantic_search)
+        self.create_chat = chat_manager.create
