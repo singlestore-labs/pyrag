@@ -1,25 +1,9 @@
-from typing import List, Optional
 from langchain_openai import OpenAIEmbeddings
+from pyrag.embeddings.creator import EmbeddingsCreator
 
-models = ['text-embedding-3-small', 'text-embedding-3-large', 'text-embedding-ada-002']
+openai_embedding_model_names = ['text-embedding-3-small', 'text-embedding-3-large', 'text-embedding-ada-002']
 
 
-def create_factory(model_name: Optional[str] = models[0]):
-    if not model_name:
-        raise ValueError('model_name is required')
-
-    model = OpenAIEmbeddings(model=model_name)
-
-    def create(input: str | List[str]):
-        input_list: List[str]
-
-        if isinstance(input, list):
-            input_list = input
-        elif isinstance(input, str):
-            input_list = [input]
-        else:
-            raise ValueError('Input must have the type of str or List[str]')
-
-        return model.embed_documents(input_list)
-
-    return create
+class OpenAIEmbeddingsCreator(EmbeddingsCreator):
+    def __init__(self, model_name: str = openai_embedding_model_names[0]):
+        super().__init__(OpenAIEmbeddings(model=model_name).embed_documents)

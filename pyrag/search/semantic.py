@@ -1,23 +1,23 @@
 from typing import Optional
+from pyrag.embeddings.typing import EmbeddingInput
+from pyrag.search.creator import SearchCreator
 
-from ..db.typing import DBConnection
-from ..embeddings.typing import CreateEmbeddings, EmbeddingInput
 
-
-def semantic_search_factory(db_connection: DBConnection, create_embeddings: CreateEmbeddings):
-    def semantic_search(
-            table_name: str,
-            input: EmbeddingInput,
-            select: Optional[str] = 'content',
-            vector_column_name: Optional[str] = 'v',
-            as_name: Optional[str] = 'similarity',
-            index_name: Optional[str] = 'vector_index',
-            limit: Optional[int] = 5
+class SemanticSearch(SearchCreator):
+    def __call__(
+        self,
+        table_name: str,
+        input: EmbeddingInput,
+        limit: Optional[int] = 5,
+        select: Optional[str] = 'content',
+        vector_column_name: Optional[str] = 'v',
+        as_name: Optional[str] = 'similarity',
+        index_name: Optional[str] = 'vector_index',
     ):
-        input_embedding = create_embeddings(input)[0]
+        input_embedding = self.embeddings_model.embed(input)[0]
         v_length = len(input_embedding)
 
-        with db_connection.cursor() as cursor:
+        with self.db_connection.cursor() as cursor:
             query = f'''
                 SELECT {select}, {vector_column_name} <*> '{input_embedding}' :> VECTOR({v_length}) AS {as_name}
                 FROM {table_name}
@@ -33,5 +33,3 @@ def semantic_search_factory(db_connection: DBConnection, create_embeddings: Crea
 
             cursor.execute(query)
             return cursor.fetchall()
-
-    return semantic_search

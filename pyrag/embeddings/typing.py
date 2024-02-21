@@ -1,5 +1,9 @@
-from typing import Callable, List, Optional
+from typing import Callable, List
 
-EmbeddingModelName = Optional[str]
+EmbeddingModelName = str
 EmbeddingInput = str | List[str]
-CreateEmbeddings = Callable[[str | List[str]], List[List[float]]]
+Embedding = List[float]
+Embeddings = List[Embedding]
+
+EmbedderInput = List[str]
+Embedder = Callable[[EmbedderInput], Embeddings]
