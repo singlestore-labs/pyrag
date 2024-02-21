@@ -1,4 +1,5 @@
 from typing import Optional
+
 from ..db.typing import DBConnection
 from ..embeddings.typing import CreateEmbeddings, EmbeddingInput
 
