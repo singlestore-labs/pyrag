@@ -13,6 +13,6 @@ class EmbeddingsCreator():
         elif isinstance(input, str):
             embedder_input = [input]
         else:
-            raise ValueError('Input must have the type of str or List[str]')
+            raise ValueError('Input must have the type of str or list[str]')
 
         return self.embedder(embedder_input)

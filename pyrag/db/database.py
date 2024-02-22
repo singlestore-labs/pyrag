@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Optional
 import singlestoredb as s2
 
 
@@ -11,7 +11,7 @@ class Database:
     def create_table(
             self,
             table_name: str,
-            definitions: Optional[List[Tuple[str, Optional[str]]]] = None,
+            definitions: Optional[list[tuple[str, Optional[str]]]] = None,
             definition: Optional[str] = None,
             extra: Optional[str] = None
     ):
@@ -39,7 +39,7 @@ class Database:
         with self.cursor() as cursor:
             cursor.execute(f'DROP TABLE IF EXISTS {table_name}')
 
-    def insert_values(self, table_name: str, values: List[Dict[str, Any]], extra: Optional[str] = None):
+    def insert_values(self, table_name: str, values: list[dict], extra: Optional[str] = None):
         columns = ', '.join(values[0].keys())
         placeholders = ', '.join(['%s'] * len(values[0]))
         to_insert = [tuple(i.values()) for i in values]
@@ -50,3 +50,11 @@ class Database:
 
         with self.cursor() as cursor:
             cursor.executemany(query, to_insert)
+
+    def delete_values(self, table_name: str, where: dict):
+        placeholders = " AND ".join([f"{key} = %s" for key in where])
+        values = tuple(where.values())
+        query = f"DELETE FROM {table_name} WHERE {placeholders}"
+
+        with self.cursor() as cursor:
+            cursor.execute(query, values)

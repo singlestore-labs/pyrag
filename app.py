@@ -17,8 +17,14 @@ pyrag = PyRAG(connection_url, )
 # pyrag.semantic_search('table_name', 'prompt')
 # pyrag.create_embeddings('Some text here')
 
+# pyrag.db.drop_table('chats')
+# pyrag.db.drop_table('chat_threads')
+# pyrag.db.drop_table('chat_messages')
+
 chat = pyrag.create_chat(
     knowledge_sources=[['bc_canada_cities_csv']],
     system_role='You are a helpful assistant',
     store_history=True,
 )
+
+chat.delete()
