@@ -1,8 +1,12 @@
+from typing import List
+
+
 ChatName = str
 ChatModelName = str
 ChatTableName = str
 ChatThreadId = str
 ChatThreadsTableName = str
 ChatSystemRole = str
-ChatStoreMessages = bool
+ChatStoreHistory = bool
 ChatMessagesTableName = str
+ChatKnowledgeSource = List[str]

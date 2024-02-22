@@ -1,10 +1,9 @@
 from typing import List, Optional
 from pyrag.chat.chat import Chat
-from pyrag.chat.knowledge_source import ChatKnowledgeSource
 from pyrag.db.database import Database
 from pyrag.embeddings.embeddings import Embeddings
 from pyrag.search.semantic import SemanticSearch
-from pyrag.chat.typing import ChatMessagesTableName, ChatModelName, ChatName, ChatStoreMessages, ChatSystemRole, ChatTableName, ChatThreadId, ChatThreadsTableName
+from pyrag.chat.typing import ChatKnowledgeSource, ChatMessagesTableName, ChatModelName, ChatName, ChatStoreHistory, ChatSystemRole, ChatTableName, ChatThreadId, ChatThreadsTableName
 
 
 class ChatManager:
@@ -20,27 +19,27 @@ class ChatManager:
 
     def create(
         self,
-        knowledge_sources: List[ChatKnowledgeSource],
         name: Optional[ChatName] = None,
         model_name: Optional[ChatModelName] = None,
-        table_name: Optional[ChatTableName] = None,
-        thread_id: Optional[ChatThreadId] = None,
-        threads_table_name: Optional[ChatThreadsTableName] = None,
         system_role: Optional[ChatSystemRole] = None,
-        store_messages: Optional[ChatStoreMessages] = None,
+        knowledge_sources: Optional[List[ChatKnowledgeSource]] = None,
+        store_history: Optional[ChatStoreHistory] = False,
+        thread_id: Optional[ChatThreadId] = None,
+        chats_table_name: Optional[ChatTableName] = None,
+        threads_table_name: Optional[ChatThreadsTableName] = None,
         messages_table_name: Optional[ChatMessagesTableName] = None
     ):
         return Chat(
             self.db,
             self.embeddings,
             self.semantic_search,
-            knowledge_sources,
             name,
             model_name,
-            table_name,
-            thread_id,
-            threads_table_name,
             system_role,
-            store_messages,
-            messages_table_name
+            knowledge_sources,
+            store_history,
+            thread_id,
+            chats_table_name,
+            threads_table_name,
+            messages_table_name,
         )
