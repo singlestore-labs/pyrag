@@ -24,4 +24,4 @@ class PyRAG:
         semantic_search = Search(self.db, embeddings, 'semantic')
         self.semantic_search = semantic_search.search
         chat_manager = ChatManager(self.db, embeddings, self.semantic_search)
-        self.create_chat = chat_manager.create
+        self.create_chat = chat_manager.create_chat

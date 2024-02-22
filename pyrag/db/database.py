@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 import singlestoredb as s2
 
 
@@ -39,7 +39,7 @@ class Database:
         with self.cursor() as cursor:
             cursor.execute(f'DROP TABLE IF EXISTS {table_name}')
 
-    def insert_values(self, table_name: str, values: List[Dict[str, str]], extra: Optional[str] = None):
+    def insert_values(self, table_name: str, values: List[Dict[str, Any]], extra: Optional[str] = None):
         columns = ', '.join(values[0].keys())
         placeholders = ', '.join(['%s'] * len(values[0]))
         to_insert = [tuple(i.values()) for i in values]
