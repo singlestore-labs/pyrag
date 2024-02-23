@@ -1,6 +1,4 @@
-from json import dumps
-from uuid import uuid4
-
+from typing import Optional
 from pyrag.chat.chat import Chat
 from pyrag.db.database import Database
 from pyrag.embeddings.embeddings import Embeddings
@@ -18,124 +16,30 @@ class ChatManager:
         self.embeddings = embeddings
         self.semantic_search = semantic_search
 
-    def _create_tables(
-        self,
-        chats_table_name: str,
-        sessions_table_name: str,
-        messages_table_name: str,
-        store_history: bool
-    ):
-        tables_to_create = []
-
-        tables_to_create.append([
-            chats_table_name,
-            [
-                ('id', 'VARCHAR(256) PRIMARY KEY'),
-                ('created_at', 'DATETIME DEFAULT CURRENT_TIMESTAMP'),
-                ('name', 'VARCHAR(256)'),
-                ('model_name', 'VARCHAR(256)'),
-                ('system_role', 'TEXT'),
-                ('knowledge_sources', 'JSON'),
-                ('store_history', 'BOOL'),
-                ('sessions_table_name', 'VARCHAR(256)'),
-                ('messages_table_name', 'VARCHAR(256)')
-            ]
-        ])
-
-        if store_history:
-            tables_to_create.append([
-                sessions_table_name,
-                [
-                    ('id', 'INT AUTO_INCREMENT PRIMARY KEY'),
-                    ('created_at', 'DATETIME DEFAULT CURRENT_TIMESTAMP'),
-                    ('chat_id', 'VARCHAR(256)')
-                ],
-            ])
-
-            tables_to_create.append([
-                messages_table_name,
-                [
-                    ('id', 'INT AUTO_INCREMENT PRIMARY KEY'),
-                    ('created_at', 'DATETIME DEFAULT CURRENT_TIMESTAMP'),
-                    ('chat_id', 'VARCHAR(256)'),
-                    ('chat_session_id', 'INT'),
-                    ('content', 'LONGTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci'),
-                    ('role', 'VARCHAR(256)')
-                ],
-            ])
-
-        for table in tables_to_create:
-            self.db.create_table(*table)
-
-    def _insert_chat(
-        self,
-        chats_table_name: str,
-        id: str,
-        name: str,
-        model_name: str,
-        system_role: str,
-        knowledge_sources: list[list[str]],
-        store_history: bool,
-        sessions_table_name: str,
-        messages_table_name: str
-    ):
-        self.db.insert_values(chats_table_name, [{
-            'id': id,
-            'name': name,
-            'model_name': model_name,
-            'system_role': system_role,
-            'knowledge_sources': dumps(knowledge_sources),
-            'store_history': store_history,
-            'sessions_table_name': sessions_table_name,
-            'messages_table_name': messages_table_name,
-        }])
-
     def create_chat(
         self,
-        id: str = str(uuid4()),
-        name: str = '',
-        model_name: str = 'gpt-3.5-turbo',
-        system_role: str = 'You are a helpful assistant',
-        knowledge_sources: list[list[str]] = [],
-        store_history: bool = False,
-        session_id: str = '',
-        chats_table_name: str = 'chats',
-        sessions_table_name: str = 'chat_sessions',
-        messages_table_name: str = 'chat_messages',
+        id: Optional[str] = None,
+        name: Optional[str] = None,
+        model_name: Optional[str] = None,
+        system_role: Optional[str] = None,
+        knowledge_sources: Optional[list[list[str]]] = None,
+        store_history: Optional[bool] = None,
+        chats_table_name: Optional[str] = None,
+        sessions_table_name: Optional[str] = None,
+        messages_table_name: Optional[str] = None,
     ):
 
-        if not session_id:
-            self._create_tables(
-                chats_table_name,
-                sessions_table_name,
-                messages_table_name,
-                store_history
-            )
-
-            self._insert_chat(
-                chats_table_name,
-                id,
-                name,
-                model_name,
-                system_role,
-                knowledge_sources,
-                store_history,
-                sessions_table_name,
-                messages_table_name
-            )
-
         return Chat(
-            self.db,
-            self.embeddings,
-            self.semantic_search,
-            id,
-            name,
-            model_name,
-            system_role,
-            knowledge_sources,
-            store_history,
-            session_id,
-            chats_table_name,
-            sessions_table_name,
-            messages_table_name,
+            db=self.db,
+            embeddings=self.embeddings,
+            semantic_search=self.semantic_search,
+            id=id,
+            name=name,
+            model_name=model_name,
+            system_role=system_role,
+            knowledge_sources=knowledge_sources,
+            store_history=store_history,
+            chats_table_name=chats_table_name,
+            sessions_table_name=sessions_table_name,
+            messages_table_name=messages_table_name,
         )
