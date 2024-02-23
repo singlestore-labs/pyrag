@@ -1,7 +1,7 @@
-from langchain_community.embeddings import HuggingFaceEmbeddings as _HuggingFaceEmbeddings
-from pyrag.embeddings.creator import EmbeddingsCreator
+from pyrag.embeddings.base import BaseEmbeddings
 
 
-class HuggingFaceEmbeddings(EmbeddingsCreator):
+class HuggingFaceEmbeddings(BaseEmbeddings):
     def __init__(self):
-        super().__init__(_HuggingFaceEmbeddings().embed_documents)
+        from langchain_community.embeddings import HuggingFaceEmbeddings
+        super().__init__(HuggingFaceEmbeddings().embed_documents)

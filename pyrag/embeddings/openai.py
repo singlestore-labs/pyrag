@@ -1,9 +1,9 @@
-from langchain_openai import OpenAIEmbeddings as _OpenAIEmbeddings
-from pyrag.embeddings.creator import EmbeddingsCreator
+from pyrag.embeddings.base import BaseEmbeddings
 
 openai_embedding_model_names = ['text-embedding-3-small', 'text-embedding-3-large', 'text-embedding-ada-002']
 
 
-class OpenAIEmbeddings(EmbeddingsCreator):
+class OpenAIEmbeddings(BaseEmbeddings):
     def __init__(self, model_name: str = openai_embedding_model_names[0]):
-        super().__init__(_OpenAIEmbeddings(model=model_name).embed_documents)
+        from langchain_openai import OpenAIEmbeddings
+        super().__init__(OpenAIEmbeddings(model=model_name).embed_documents)

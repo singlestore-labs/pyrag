@@ -5,7 +5,7 @@ from pyrag.embeddings.embeddings import Embeddings
 from pyrag.search.typing import SearchInput, SearchResult
 
 
-class SearchCreator(ABC):
+class BaseSearch(ABC):
     def __init__(self, db: Database, embeddings: Embeddings):
         self.db = db
         self.embeddings = embeddings
@@ -16,7 +16,5 @@ class SearchCreator(ABC):
         table_name: str,
         input: SearchInput,
         limit: Optional[int] = None,
-        *args,
-        **kwargs
     ) -> SearchResult:
         pass

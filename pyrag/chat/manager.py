@@ -21,7 +21,7 @@ class ChatManager:
     def _create_tables(
         self,
         chats_table_name: str,
-        threads_table_name: str,
+        sessions_table_name: str,
         messages_table_name: str,
         store_history: bool
     ):
@@ -37,14 +37,14 @@ class ChatManager:
                 ('system_role', 'TEXT'),
                 ('knowledge_sources', 'JSON'),
                 ('store_history', 'BOOL'),
-                ('threads_table_name', 'VARCHAR(256)'),
+                ('sessions_table_name', 'VARCHAR(256)'),
                 ('messages_table_name', 'VARCHAR(256)')
             ]
         ])
 
         if store_history:
             tables_to_create.append([
-                threads_table_name,
+                sessions_table_name,
                 [
                     ('id', 'INT AUTO_INCREMENT PRIMARY KEY'),
                     ('created_at', 'DATETIME DEFAULT CURRENT_TIMESTAMP'),
@@ -58,7 +58,7 @@ class ChatManager:
                     ('id', 'INT AUTO_INCREMENT PRIMARY KEY'),
                     ('created_at', 'DATETIME DEFAULT CURRENT_TIMESTAMP'),
                     ('chat_id', 'VARCHAR(256)'),
-                    ('chat_thread_id', 'INT'),
+                    ('chat_session_id', 'INT'),
                     ('content', 'LONGTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci'),
                     ('role', 'VARCHAR(256)')
                 ],
@@ -76,7 +76,7 @@ class ChatManager:
         system_role: str,
         knowledge_sources: list[list[str]],
         store_history: bool,
-        threads_table_name: str,
+        sessions_table_name: str,
         messages_table_name: str
     ):
         self.db.insert_values(chats_table_name, [{
@@ -86,7 +86,7 @@ class ChatManager:
             'system_role': system_role,
             'knowledge_sources': dumps(knowledge_sources),
             'store_history': store_history,
-            'threads_table_name': threads_table_name,
+            'sessions_table_name': sessions_table_name,
             'messages_table_name': messages_table_name,
         }])
 
@@ -98,16 +98,16 @@ class ChatManager:
         system_role: str = 'You are a helpful assistant',
         knowledge_sources: list[list[str]] = [],
         store_history: bool = False,
-        thread_id: str = '',
+        session_id: str = '',
         chats_table_name: str = 'chats',
-        threads_table_name: str = 'chat_threads',
+        sessions_table_name: str = 'chat_sessions',
         messages_table_name: str = 'chat_messages',
     ):
 
-        if not thread_id:
+        if not session_id:
             self._create_tables(
                 chats_table_name,
-                threads_table_name,
+                sessions_table_name,
                 messages_table_name,
                 store_history
             )
@@ -120,7 +120,7 @@ class ChatManager:
                 system_role,
                 knowledge_sources,
                 store_history,
-                threads_table_name,
+                sessions_table_name,
                 messages_table_name
             )
 
@@ -134,8 +134,8 @@ class ChatManager:
             system_role,
             knowledge_sources,
             store_history,
-            thread_id,
+            session_id,
             chats_table_name,
-            threads_table_name,
+            sessions_table_name,
             messages_table_name,
         )
