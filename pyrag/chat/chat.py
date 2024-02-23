@@ -40,6 +40,24 @@ class Chat:
             self.id = str(uuid4())
             self._create_tables()
             self._insert()
+        else:
+            self._load()
+
+    def _load(self):
+        with self.db.cursor() as cursor:
+            try:
+                cursor.execute(f"SELECT * FROM {self.chats_table_name} WHERE id = '{self.id}'")
+                row = cursor.fetchone()
+                if not row or not cursor.description:
+                    raise ValueError(f'Chat with this id {self.id} not found')
+                for column, value in zip(cursor.description, row):
+                    if column[0] == 'created_at':
+                        continue
+                    if column[0] == 'store_history':
+                        value = bool(value)
+                    setattr(self, column[0], value)
+            finally:
+                cursor.close()
 
     def _create_tables(self):
         tables_to_create = []
@@ -105,6 +123,5 @@ class Chat:
         )
 
     def delete(self):
-        self.db.delete_values(self.chats_table_name, {'id': self.id})
-        self.db.delete_values(self.sessions_table_name, {'chat_id': self.id})
-        self.db.delete_values(self.messages_table_name, {'chat_id': self.id})
+        for table in [self.chats_table_name, self.sessions_table_name, self.messages_table_name]:
+            self.db.delete_values(table, {'chat_id': self.id})
