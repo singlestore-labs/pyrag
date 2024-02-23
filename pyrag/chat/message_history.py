@@ -11,8 +11,8 @@ class ChatMessageHistory(BaseChatMessageHistory):
     def __init__(
         self,
         db: Database,
-        chat_id: str,
-        session_id: str,
+        chat_id: int,
+        session_id: int,
         messages_table_name: str,
     ):
         self.db = db
@@ -27,7 +27,7 @@ class ChatMessageHistory(BaseChatMessageHistory):
             try:
                 cursor.execute(f'''
                   SELECT message FROM {self.messages_table_name}
-                  WHERE chat_id = {self.chat_id} AND session_id = {self.session_id}
+                  WHERE session_id = {self.session_id}
                 ''')
                 for row in cursor.fetchall():
                     if type(row) == tuple:

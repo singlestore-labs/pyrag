@@ -18,7 +18,7 @@ class ChatManager:
 
     def create_chat(
         self,
-        id: Optional[str] = None,
+        id: Optional[int] = None,
         name: Optional[str] = None,
         model_name: Optional[str] = None,
         system_role: Optional[str] = None,
