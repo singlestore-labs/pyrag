@@ -1,10 +1,10 @@
 from typing import Optional
 from uuid import uuid4
-from pyrag.chat.message_history import ChatMessageHistory
+
+from pyrag.chat.chain import ChatChain
 from pyrag.db.database import Database
 from pyrag.embeddings.embeddings import Embeddings
 from pyrag.search.semantic import SemanticSearch
-# from langchain_core.messages import BaseMessage, message_to_dict, messages_from_dict
 
 
 class ChatSession:
@@ -20,7 +20,8 @@ class ChatSession:
         knowledge_sources: list[list[str]],
         store_history: bool,
         id: Optional[int] = None,
-        name: Optional[str] = None
+        name: Optional[str] = None,
+        **chat_chain_kwargs
     ):
         self.db = db
         self.embeddings = embeddings
@@ -33,6 +34,8 @@ class ChatSession:
         self.system_role = system_role
         self.knowledge_sources = knowledge_sources
         self.store_history = store_history
+        self.message_history = None
+        self.memory = None
 
         try:
             self._load()
@@ -40,12 +43,27 @@ class ChatSession:
             self._insert()
 
         if self.store_history:
+            from langchain.memory import ConversationBufferMemory
+            from pyrag.chat.message_history import ChatMessageHistory
+
             self.message_history = ChatMessageHistory(
                 db=self.db,
                 chat_id=self.chat_id,
                 session_id=self.id,
                 messages_table_name=self.messages_table_name
             )
+
+            self.memory = ConversationBufferMemory(
+                chat_memory=self.message_history,
+                memory_key='chat_history',
+                return_messages=True,
+            )
+
+        self.chain = ChatChain(
+            memory=self.memory,
+            system_role=self.system_role,
+            **chat_chain_kwargs
+        )
 
     def _insert(self):
         self.db.insert_values(self.table_name, [{

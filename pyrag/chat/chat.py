@@ -144,7 +144,8 @@ class Chat:
         self,
         id: Optional[int] = None,
         name: Optional[str] = None,
-        stor_history: Optional[bool] = None
+        stor_history: Optional[bool] = None,
+        **chat_chain_kwargs,
     ) -> ChatSession:
         return ChatSession(
             db=self.db,
@@ -157,7 +158,8 @@ class Chat:
             messages_table_name=self.messages_table_name,
             system_role=self.system_role,
             knowledge_sources=self.knowledge_sources,
-            store_history=stor_history or self.store_history
+            store_history=stor_history or self.store_history,
+            **chat_chain_kwargs
         )
 
     def delete(self):
