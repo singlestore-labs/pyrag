@@ -1,6 +1,7 @@
 from json import dumps
 from typing import Optional
 from uuid import uuid4
+
 from pyrag.chat.session import ChatSession
 from pyrag.db.database import Database
 from pyrag.embeddings.embeddings import Embeddings
@@ -13,12 +14,14 @@ class Chat:
         db: Database,
         embeddings: Embeddings,
         semantic_search: SemanticSearch,
+
         id: Optional[int] = None,
         name: Optional[str] = None,
         model_name: Optional[str] = None,
         system_role: Optional[str] = None,
         knowledge_sources: Optional[list[list[str]]] = None,
-        store_history: Optional[bool] = None,
+        store: Optional[bool] = None,
+        store_messages_history: Optional[bool] = None,
         chats_table_name: Optional[str] = None,
         sessions_table_name: Optional[str] = None,
         messages_table_name: Optional[str] = None,
@@ -26,21 +29,24 @@ class Chat:
         self.db = db
         self.embeddings = embeddings
         self.semantic_search = semantic_search
+
         self.id = id or 0
         self.name = name or str(uuid4())
         self.model_name = model_name or 'gpt-3.5-turbo'
         self.system_role = system_role or 'You are a helpful assistant'
         self.knowledge_sources = knowledge_sources or []
-        self.store_history = store_history or True
+        self.store = store or False
+        self.store_messages_history = store_messages_history or False
         self.chats_table_name = chats_table_name or 'chats'
         self.sessions_table_name = sessions_table_name or 'chat_sessions'
         self.messages_table_name = messages_table_name or 'chat_messages'
 
-        try:
-            self._load()
-        except:
-            self._create_tables()
-            self._insert()
+        if self.store:
+            try:
+                self._load()
+            except:
+                self._create_tables()
+                self._insert()
 
     def _create_tables(self):
         tables_to_create = []
@@ -54,7 +60,7 @@ class Chat:
                 ('model_name', 'VARCHAR(256)'),
                 ('system_role', 'TEXT'),
                 ('knowledge_sources', 'JSON'),
-                ('store_history', 'BOOL'),
+                ('store_messages_history', 'BOOL'),
                 ('sessions_table_name', 'VARCHAR(256)'),
                 ('messages_table_name', 'VARCHAR(256)')
             ],
@@ -65,15 +71,14 @@ class Chat:
             '''
         ])
 
-        if self.store_history:
+        if self.store_messages_history:
             tables_to_create.append([
                 self.sessions_table_name,
                 [
                     ('id', 'BIGINT NOT NULL AUTO_INCREMENT'),
                     ('created_at', 'DATETIME DEFAULT CURRENT_TIMESTAMP'),
                     ('name', 'VARCHAR(256) NOT NULL'),
-                    ('chat_id', 'BIGINT'),
-                    ('store_history', 'BOOL')
+                    ('chat_id', 'BIGINT')
                 ],
                 f'''
                     KEY(id),
@@ -102,7 +107,7 @@ class Chat:
             'model_name': self.model_name,
             'system_role': self.system_role,
             'knowledge_sources': dumps(self.knowledge_sources),
-            'store_history': self.store_history,
+            'store_messages_history': self.store_messages_history,
             'sessions_table_name': self.sessions_table_name,
             'messages_table_name': self.messages_table_name,
         }])
@@ -132,9 +137,7 @@ class Chat:
                 if not row or not cursor.description:
                     raise Exception(f'Chat not found')
                 for column, value in zip(cursor.description, row):
-                    if column[0] == 'created_at':
-                        continue
-                    if column[0] == 'store_history':
+                    if column[0] == 'store_messages_history':
                         value = bool(value)
                     setattr(self, column[0], value)
             finally:
@@ -144,22 +147,19 @@ class Chat:
         self,
         id: Optional[int] = None,
         name: Optional[str] = None,
-        stor_history: Optional[bool] = None,
-        **chat_chain_kwargs,
+        store: Optional[bool] = None
     ) -> ChatSession:
         return ChatSession(
             db=self.db,
             embeddings=self.embeddings,
             semantic_search=self.semantic_search,
-            id=id,
-            name=name,
             chat_id=self.id,
+            store=store or self.store_messages_history,
+            system_role=self.system_role,
             table_name=self.sessions_table_name,
             messages_table_name=self.messages_table_name,
-            system_role=self.system_role,
-            knowledge_sources=self.knowledge_sources,
-            store_history=stor_history or self.store_history,
-            **chat_chain_kwargs
+            id=id,
+            name=name,
         )
 
     def delete(self):

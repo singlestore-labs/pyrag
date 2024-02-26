@@ -6,7 +6,7 @@ from langchain_core.messages import BaseMessage, message_to_dict, messages_from_
 from pyrag.db.database import Database
 
 
-class ChatMessageHistory(BaseChatMessageHistory):
+class ChatDatabaseMessageHistory(BaseChatMessageHistory):
     def __init__(
         self,
         db: Database,

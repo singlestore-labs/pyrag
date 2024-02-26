@@ -1,10 +1,12 @@
 from typing import Optional
 from uuid import uuid4
+from langchain.memory import ConversationBufferMemory
 
-from pyrag.chat.chain import ChatChain
 from pyrag.db.database import Database
 from pyrag.embeddings.embeddings import Embeddings
 from pyrag.search.semantic import SemanticSearch
+from pyrag.chat.chain import ChatLLMChain
+from pyrag.chat.model import ChatModel
 
 
 class ChatSession:
@@ -13,63 +15,63 @@ class ChatSession:
         db: Database,
         embeddings: Embeddings,
         semantic_search: SemanticSearch,
+
         chat_id: int,
+        store: bool,
+        system_role: str,
         table_name: str,
         messages_table_name: str,
-        system_role: str,
-        knowledge_sources: list[list[str]],
-        store_history: bool,
         id: Optional[int] = None,
         name: Optional[str] = None,
-        **chat_chain_kwargs
     ):
         self.db = db
         self.embeddings = embeddings
         self.semantic_search = semantic_search
-        self.id = id or 0
-        self.name = name or str(uuid4())
+
         self.chat_id = chat_id
+        self.store = store
+        self.system_role = system_role
         self.table_name = table_name
         self.messages_table_name = messages_table_name
-        self.system_role = system_role
-        self.knowledge_sources = knowledge_sources
-        self.store_history = store_history
+        self.id = id or 0
+        self.name = name or str(uuid4())
+
         self.message_history = None
         self.memory = None
 
-        try:
-            self._load()
-        except:
-            self._insert()
+        if self.store:
+            try:
+                self._load()
+            except:
+                self._insert()
 
-        if self.store_history:
-            from langchain.memory import ConversationBufferMemory
-            from pyrag.chat.message_history import ChatMessageHistory
-
-            self.message_history = ChatMessageHistory(
+            from pyrag.chat.db_message_history import ChatDatabaseMessageHistory
+            self.message_history = ChatDatabaseMessageHistory(
                 db=self.db,
-                chat_id=self.chat_id,
+                chat_id=self.id,
                 session_id=self.id,
                 messages_table_name=self.messages_table_name
             )
+        else:
+            from langchain.memory import ChatMessageHistory
+            self.message_history = ChatMessageHistory()
 
-            self.memory = ConversationBufferMemory(
-                chat_memory=self.message_history,
-                memory_key='chat_history',
-                return_messages=True,
-            )
+        self.memory = ConversationBufferMemory(
+            chat_memory=self.message_history,
+            memory_key='chat_history',
+            return_messages=True,
+        )
 
-        self.chain = ChatChain(
+        self.chain = ChatLLMChain(
+            model=ChatModel(),
             memory=self.memory,
             system_role=self.system_role,
-            **chat_chain_kwargs
         )
 
     def _insert(self):
         self.db.insert_values(self.table_name, [{
             'name': self.name,
             'chat_id': self.chat_id,
-            'store_history': self.store_history
         }])
 
         with self.db.cursor() as cursor:
@@ -97,16 +99,9 @@ class ChatSession:
                 if not row or not cursor.description:
                     raise Exception(f'Chat session not found')
                 for column, value in zip(cursor.description, row):
-                    if column[0] == 'created_at':
-                        continue
-                    if column[0] == 'store_history':
-                        value = bool(value)
                     setattr(self, column[0], value)
             finally:
                 cursor.close()
-
-    def send(self, prompt: str):
-        print(prompt)
 
     def delete(self):
         self.db.delete_values(self.table_name, {'id': self.id})

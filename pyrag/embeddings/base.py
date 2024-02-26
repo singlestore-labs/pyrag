@@ -5,8 +5,8 @@ from pyrag.embeddings.typing import Embed, EmbedInput, EmbeddingsInput, Embeddin
 
 class BaseEmbeddings(ABC):
     def __init__(self, embed: Embed):
-        self.embed = embed
         super().__init__()
+        self.embed = embed
 
     def _sanitize_input(self, input: EmbeddingsInput) -> EmbedInput:
         if isinstance(input, list):
