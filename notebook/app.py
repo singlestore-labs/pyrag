@@ -35,7 +35,7 @@ aws_bucket_name = os.environ.get('AWS_BUCKET_NAME')
 db_connection = s2.connect(connection_url)
 s3 = boto3.client('s3', aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
 text_splitter = CharacterTextSplitter(trim_chunks=False)
-embedding_model = HuggingFaceEmbeddings()
+embedding_model = HuggingFaceEmbeddings(model_name='sentence-transformers/all-MiniLM-L6-v2')
 
 
 def split_text(text: str):
@@ -57,7 +57,7 @@ def create_table(table_name: str):
             id INT AUTO_INCREMENT PRIMARY KEY,
             content LONGTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
             created_at DATETIME,
-            v VECTOR(768) NOT NULL
+            v VECTOR(384) NOT NULL
           )
         ''')
 

@@ -35,9 +35,9 @@ class ChatModel:
             )
 
         from langchain_community.llms import HuggingFaceEndpoint
+        model_kwargs['temperature'] = model_kwargs.get('temperature', 0.01)
         return HuggingFaceEndpoint(
             huggingfacehub_api_token=environ.get('PR_HUGGINGFACEHUB_API_TOKEN', ''),
-            repo_id=model_name or 'HuggingFaceH4/zephyr-7b-beta',
-            task='text-generation',
+            repo_id=model_name or 'huggingfaceh4/zephyr-7b-alpha',
             **model_kwargs
         )

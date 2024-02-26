@@ -11,7 +11,6 @@ pyrag = PyRAG(
     connection_url,
     openai_api_key=os.environ.get('OPENAI_API_KEY'),
     huggingfacehub_api_token=os.environ.get('HUGGINGFACEHUB_API_TOKEN'),
-    embedding_model_name='sentence-transformers/all-mpnet-base-v2',
 )
 
 # pyrag.db.connection
@@ -27,14 +26,14 @@ pyrag = PyRAG(
 # pyrag.db.drop_table('chat_sessions')
 # pyrag.db.drop_table('chat_messages')
 
-chat = pyrag.create_chat(
-    name='French kitchen',
-    # model_name='gpt-3.5-turbo',
-    # system_role="You are the owner of a French kitchen and help newbies cook. Answer in English with a French accent.",
-    # store=True,
-    # store_messages_history=True,
-)
+# kitchen_chat = pyrag.create_chat(
+#     name='French kitchen',
+#     system_role="You are the owner of a French kitchen and help newbies cook. Answer in English with a French accent.",
+#     # model_name='gpt-3.5-turbo',
+#     # store=True,
+#     # store_messages_history=True,
+# )
 
-chat_session = chat.create_session(name='Cooking potatoes')
-print(chat_session.send('What is a potato?'))
-print(chat_session.send('How to make it mashed?'))
+# kitchen_chat_session = kitchen_chat.create_session(name='Cooking potatoes')
+# print(kitchen_chat_session.send('What is a potato?'))
+# print(kitchen_chat_session.send('How to make it mashed?'))
