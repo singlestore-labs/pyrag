@@ -1,11 +1,10 @@
-from typing import Optional
+from typing import Any, Optional
 from uuid import uuid4
-from langchain.memory import ConversationBufferMemory
 
 from pyrag.db.database import Database
 from pyrag.embeddings.embeddings import Embeddings
 from pyrag.search.semantic import SemanticSearch
-from pyrag.chat.chain import ChatLLMChain, ChatModel
+from pyrag.chat.chain import ChatChain, ChatModel
 
 
 class ChatSession:
@@ -23,6 +22,7 @@ class ChatSession:
         messages_table_name: str,
         id: Optional[int] = None,
         name: Optional[str] = None,
+        knowledge_tables: Optional[list[list[str]]] = None,
     ):
         self.db = db
         self.embeddings = embeddings
@@ -31,13 +31,11 @@ class ChatSession:
         self.chat_id = chat_id
         self.store = store or False
         self.system_role = system_role
+        self.knowledge_tables = knowledge_tables or []
         self.table_name = table_name
         self.messages_table_name = messages_table_name
         self.id = id or 0
         self.name = name or str(uuid4())
-
-        self.message_history = None
-        self.memory = None
 
         if self.store:
             try:
@@ -45,27 +43,15 @@ class ChatSession:
             except:
                 self._insert()
 
-            from pyrag.chat.db_message_history import ChatDatabaseMessageHistory
-            self.message_history = ChatDatabaseMessageHistory(
-                db=self.db,
-                chat_id=self.id,
-                session_id=self.id,
-                messages_table_name=self.messages_table_name
-            )
-        else:
-            from langchain.memory import ChatMessageHistory
-            self.message_history = ChatMessageHistory()
-
-        self.memory = ConversationBufferMemory(
-            chat_memory=self.message_history,
-            memory_key='chat_history',
-            return_messages=True,
-        )
-
-        self.chain = ChatLLMChain(
+        self.chain = ChatChain(
+            db=self.db,
             model=model,
-            memory=self.memory,
+            chat_id=self.chat_id,
+            session_id=self.id,
+            store=self.store,
+            messages_table_name=self.messages_table_name,
             system_role=self.system_role,
+            include_context=bool(len(self.knowledge_tables))
         )
 
     def _insert(self):
@@ -103,8 +89,44 @@ class ChatSession:
             finally:
                 cursor.close()
 
-    def send(self, input: str):
-        return self.chain.predict(input=input)
+    def _search_context(
+        self,
+        input: str,
+        search_kwargs: dict[str, Any] = {}
+    ):
+        if not len(self.knowledge_tables):
+            return None
+
+        results = []
+
+        for knowledge_table in self.knowledge_tables:
+            if len(knowledge_table) > 1:
+                search_kwargs['vector_column_name'] = search_kwargs.get('vector_column_name', knowledge_table[1])
+
+            result = self.semantic_search(
+                table_name=knowledge_table[0],
+                input=input,
+                **search_kwargs
+            )
+
+            if type(result) == list and len(result) and type(result[0]) == tuple:
+                results.extend(result)
+
+        results = sorted(results, key=lambda x: -x[1])
+        return results[0] if len(results) else None
+
+    def send(
+        self,
+        input: str,
+        retrive: bool = True,
+        search_kwargs: dict[str, Any] = {}
+    ):
+        context = ''
+
+        if retrive:
+            context = self._search_context(input, search_kwargs=search_kwargs) or context
+
+        return self.chain.predict(input=input, context=context)
 
     def delete(self):
         self.db.delete_values(self.table_name, {'id': self.id})

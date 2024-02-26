@@ -21,7 +21,7 @@ class Chat:
         model_name: Optional[str] = None,
         model_kwargs: Any = None,
         system_role: Optional[str] = None,
-        knowledge_sources: Optional[list[list[str]]] = None,
+        knowledge_tables: Optional[list[list[str]]] = None,
         store: Optional[bool] = None,
         store_messages_history: Optional[bool] = None,
         chats_table_name: Optional[str] = None,
@@ -36,7 +36,7 @@ class Chat:
         self.name = name or str(uuid4())
         self.model_name = model_name
         self.system_role = system_role or 'You are a helpful assistant'
-        self.knowledge_sources = knowledge_sources or []
+        self.knowledge_tables = knowledge_tables or []
         self.store = store or False
         self.store_messages_history = store_messages_history or False
         self.chats_table_name = chats_table_name or 'chats'
@@ -66,7 +66,7 @@ class Chat:
                 ('name', 'VARCHAR(256) NOT NULL'),
                 ('model_name', 'VARCHAR(256)'),
                 ('system_role', 'TEXT'),
-                ('knowledge_sources', 'JSON'),
+                ('knowledge_tables', 'JSON'),
                 ('store_messages_history', 'BOOL'),
                 ('sessions_table_name', 'VARCHAR(256)'),
                 ('messages_table_name', 'VARCHAR(256)')
@@ -113,7 +113,7 @@ class Chat:
             'name': self.name,
             'model_name': self.model_name,
             'system_role': self.system_role,
-            'knowledge_sources': dumps(self.knowledge_sources),
+            'knowledge_tables': dumps(self.knowledge_tables),
             'store_messages_history': self.store_messages_history,
             'sessions_table_name': self.sessions_table_name,
             'messages_table_name': self.messages_table_name,
@@ -165,6 +165,7 @@ class Chat:
             model=self.model,
             store=store or self.store_messages_history,
             system_role=self.system_role,
+            knowledge_tables=self.knowledge_tables,
             table_name=self.sessions_table_name,
             messages_table_name=self.messages_table_name,
             id=id,

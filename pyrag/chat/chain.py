@@ -2,25 +2,59 @@ from typing import Optional, Union
 from langchain.chains import LLMChain
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.language_models import LanguageModelInput
-from langchain_core.memory import BaseMemory
 from langchain_core.messages import BaseMessage
 from langchain_core.runnables import Runnable
+from langchain.memory import ConversationBufferMemory
+
+from pyrag.db.database import Database
 
 ChatModel = Union[Runnable[LanguageModelInput, str], Runnable[LanguageModelInput, BaseMessage]]
 
 
-class ChatLLMChain(LLMChain):
+class ChatChain(LLMChain):
     def __init__(
         self,
+        db: Database,
         model: ChatModel,
-        memory: Optional[BaseMemory] = None,
+        chat_id: int,
+        session_id: int,
+        store: bool,
+        messages_table_name: str,
         system_role: Optional[str] = None,
+        include_context: bool = True,
     ):
-        _prompt_template = ChatPromptTemplate.from_messages([
-            ("system", system_role or 'You are a helpful assistant'),
-            MessagesPlaceholder(variable_name="chat_history"),
-            ("human", "{input}")
+        if store:
+            from pyrag.chat.db_message_history import ChatDatabaseMessageHistory
+            message_history = ChatDatabaseMessageHistory(
+                db=db,
+                chat_id=chat_id,
+                session_id=session_id,
+                messages_table_name=messages_table_name
+            )
+        else:
+            from langchain.memory import ChatMessageHistory
+            message_history = ChatMessageHistory()
+
+        memory = ConversationBufferMemory(
+            chat_memory=message_history,
+            input_key='input',
+            memory_key='chat_history',
+            return_messages=True
+        )
+
+        messages: list = [
+            MessagesPlaceholder(variable_name='chat_history')
+        ]
+
+        if include_context:
+            messages.append(('system', system_role or 'You are a helpful assistant.'),)
+
+        messages.extend([
+            ('system', 'Response to the user based on the following: {context}'),
+            ('human', '{input}')
         ])
+
+        _prompt_template = ChatPromptTemplate.from_messages(messages)
 
         super().__init__(
             llm=model,

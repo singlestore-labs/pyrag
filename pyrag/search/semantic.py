@@ -11,6 +11,7 @@ class SemanticSearch(BaseSearch):
         select: Optional[str] = 'content',
         where: Optional[dict] = None,
         limit: Optional[int] = 5,
+        min_similarity: Optional[float] = 0,
         vector_column_name: Optional[str] = 'v',
         index_name: Optional[str] = 'vector_index',
     ):
@@ -19,11 +20,12 @@ class SemanticSearch(BaseSearch):
         query = f'''
             SELECT {select}, {vector_column_name} <*> '{input_embedding}' :> VECTOR({v_length}) AS similarity
             FROM {table_name}
+            WHERE similarity > {min_similarity}
         '''
 
         if where:
             where_definition = self.db.where_to_definition(where)
-            query += f' WHERE {where_definition}'
+            query += f' AND {where_definition}'
 
         if index_name:
             query += f' ORDER BY similarity USE INDEX ({index_name}) DESC'

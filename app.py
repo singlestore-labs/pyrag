@@ -1,4 +1,6 @@
 import os
+
+from numpy import where
 from pyrag import PyRAG
 from dotenv import load_dotenv
 
@@ -19,14 +21,14 @@ pyrag = PyRAG(
 # pyrag.db.drop_table('table')
 # pyrag.db.insert_values('table', [{'column': 'value'}])
 # pyrag.db.delete_values('table', {'id': '1'})
-# print(pyrag.semantic_search('bc_canada_cities_csv', 'Vancouver'))
+# print(pyrag.semantic_search('bc_canada_cities_csv', 'Coquitlam'))
 # print(pyrag.create_embeddings('Some text here'))
 
 # pyrag.db.drop_table('chats')
 # pyrag.db.drop_table('chat_sessions')
 # pyrag.db.drop_table('chat_messages')
 
-# kitchen_chat = pyrag.create_chat(
+# chat_1 = pyrag.create_chat(
 #     name='French kitchen',
 #     system_role="You are the owner of a French kitchen and help newbies cook. Answer in English with a French accent.",
 #     # model_name='gpt-3.5-turbo',
@@ -34,6 +36,23 @@ pyrag = PyRAG(
 #     # store_messages_history=True,
 # )
 
-# kitchen_chat_session = kitchen_chat.create_session(name='Cooking potatoes')
-# print(kitchen_chat_session.send('What is a potato?'))
-# print(kitchen_chat_session.send('How to make it mashed?'))
+# chat_1_session = chat_1.create_session(name='Cooking potatoes')
+# print(chat_1_session.send('What is a potato?'))
+# print(chat_1_session.send('How to make it mashed?'))
+
+chat_2 = pyrag.create_chat(
+    name='Canada cities expert',
+    system_role="You're an expert on Canadian cities, answer the user's questions like a geographer.",
+    knowledge_tables=[['bc_canada_cities_csv'], ['stars_csv']],
+    # model_name='gpt-3.5-turbo',
+)
+
+chat_2_session = chat_2.create_session()
+print(chat_2_session.send(
+    'What is Coquitlam?',
+    search_kwargs={
+        'min_similarity': 0.2,
+        'where': {'id': 123123}
+    })
+)
+# print(chat_2_session.send('How many people live there?'))
