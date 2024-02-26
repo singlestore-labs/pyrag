@@ -1,6 +1,7 @@
 from json import dumps
-from typing import Optional
+from typing import Any, Optional
 from uuid import uuid4
+from pyrag.chat.model import ChatModel
 
 from pyrag.chat.session import ChatSession
 from pyrag.db.database import Database
@@ -18,6 +19,7 @@ class Chat:
         id: Optional[int] = None,
         name: Optional[str] = None,
         model_name: Optional[str] = None,
+        model_kwargs: Any = None,
         system_role: Optional[str] = None,
         knowledge_sources: Optional[list[list[str]]] = None,
         store: Optional[bool] = None,
@@ -32,7 +34,7 @@ class Chat:
 
         self.id = id or 0
         self.name = name or str(uuid4())
-        self.model_name = model_name or 'gpt-3.5-turbo'
+        self.model_name = model_name
         self.system_role = system_role or 'You are a helpful assistant'
         self.knowledge_sources = knowledge_sources or []
         self.store = store or False
@@ -47,6 +49,11 @@ class Chat:
             except:
                 self._create_tables()
                 self._insert()
+
+        self.model = ChatModel()(
+            model_name=self.model_name,
+            model_kwargs=model_kwargs
+        )
 
     def _create_tables(self):
         tables_to_create = []
@@ -149,11 +156,13 @@ class Chat:
         name: Optional[str] = None,
         store: Optional[bool] = None
     ) -> ChatSession:
+
         return ChatSession(
             db=self.db,
             embeddings=self.embeddings,
             semantic_search=self.semantic_search,
             chat_id=self.id,
+            model=self.model,
             store=store or self.store_messages_history,
             system_role=self.system_role,
             table_name=self.sessions_table_name,

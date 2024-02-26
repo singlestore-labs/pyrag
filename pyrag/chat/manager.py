@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Any, Optional
 from pyrag.chat.chat import Chat
 from pyrag.db.database import Database
 from pyrag.embeddings.embeddings import Embeddings
@@ -21,6 +21,7 @@ class ChatManager:
         id: Optional[int] = None,
         name: Optional[str] = None,
         model_name: Optional[str] = None,
+        model_kwargs: dict[str, Any] = {},
         system_role: Optional[str] = None,
         knowledge_sources: Optional[list[list[str]]] = None,
         store: Optional[bool] = None,
@@ -37,6 +38,7 @@ class ChatManager:
             id=id,
             name=name,
             model_name=model_name,
+            model_kwargs=model_kwargs,
             system_role=system_role,
             knowledge_sources=knowledge_sources,
             store=store,

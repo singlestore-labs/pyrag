@@ -7,7 +7,12 @@ load_dotenv()
 
 connection_url = os.environ.get('DB_CONNECTION_URL') or ''
 
-pyrag = PyRAG(connection_url)
+pyrag = PyRAG(
+    connection_url,
+    openai_api_key=os.environ.get('OPENAI_API_KEY'),
+    huggingfacehub_api_token=os.environ.get('HUGGINGFACEHUB_API_TOKEN'),
+    embedding_model_name='sentence-transformers/all-mpnet-base-v2',
+)
 
 # pyrag.db.connection
 # pyrag.db.cursor
@@ -23,9 +28,13 @@ pyrag = PyRAG(connection_url)
 # pyrag.db.drop_table('chat_messages')
 
 chat = pyrag.create_chat(
-    name='BC Canada Cities',
-    knowledge_sources=[['bc_canada_cities_csv']]
+    name='French kitchen',
+    # model_name='gpt-3.5-turbo',
+    # system_role="You are the owner of a French kitchen and help newbies cook. Answer in English with a French accent.",
+    # store=True,
+    # store_messages_history=True,
 )
 
-
-chat_session = chat.create_session(name='My Session')
+chat_session = chat.create_session(name='Cooking potatoes')
+print(chat_session.send('What is a potato?'))
+print(chat_session.send('How to make it mashed?'))

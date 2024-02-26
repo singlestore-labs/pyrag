@@ -5,8 +5,7 @@ from langchain.memory import ConversationBufferMemory
 from pyrag.db.database import Database
 from pyrag.embeddings.embeddings import Embeddings
 from pyrag.search.semantic import SemanticSearch
-from pyrag.chat.chain import ChatLLMChain
-from pyrag.chat.model import ChatModel
+from pyrag.chat.chain import ChatLLMChain, ChatModel
 
 
 class ChatSession:
@@ -17,6 +16,7 @@ class ChatSession:
         semantic_search: SemanticSearch,
 
         chat_id: int,
+        model: ChatModel,
         store: bool,
         system_role: str,
         table_name: str,
@@ -29,7 +29,7 @@ class ChatSession:
         self.semantic_search = semantic_search
 
         self.chat_id = chat_id
-        self.store = store
+        self.store = store or False
         self.system_role = system_role
         self.table_name = table_name
         self.messages_table_name = messages_table_name
@@ -63,7 +63,7 @@ class ChatSession:
         )
 
         self.chain = ChatLLMChain(
-            model=ChatModel(),
+            model=model,
             memory=self.memory,
             system_role=self.system_role,
         )
@@ -102,6 +102,9 @@ class ChatSession:
                     setattr(self, column[0], value)
             finally:
                 cursor.close()
+
+    def send(self, input: str):
+        return self.chain.predict(input=input)
 
     def delete(self):
         self.db.delete_values(self.table_name, {'id': self.id})
