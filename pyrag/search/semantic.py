@@ -15,7 +15,7 @@ class SemanticSearch(BaseSearch):
         vector_column_name: Optional[str] = 'v',
         index_name: Optional[str] = 'vector_index',
     ):
-        input_embedding = self.embeddings.create(input)[0]
+        input_embedding = (self._embeddings.create(input) or [])[0]
         v_length = len(input_embedding)
         query = f'''
             SELECT {select}, {vector_column_name} <*> '{input_embedding}' :> VECTOR({v_length}) AS similarity
@@ -24,7 +24,7 @@ class SemanticSearch(BaseSearch):
         '''
 
         if where:
-            where_definition = self.db.where_to_definition(where)
+            where_definition = self._db.where_to_definition(where)
             query += f' AND {where_definition}'
 
         if index_name:
@@ -35,7 +35,7 @@ class SemanticSearch(BaseSearch):
         if limit:
             query += f' LIMIT {limit}'
 
-        with self.db.cursor() as cursor:
+        with self._db.cursor() as cursor:
             try:
                 cursor.execute(query)
                 return cursor.fetchall()

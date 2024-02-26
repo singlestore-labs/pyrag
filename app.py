@@ -1,6 +1,5 @@
 import os
 
-from numpy import where
 from pyrag import PyRAG
 from dotenv import load_dotenv
 
@@ -14,6 +13,7 @@ pyrag = PyRAG(
     openai_api_key=os.environ.get('OPENAI_API_KEY'),
     huggingfacehub_api_token=os.environ.get('HUGGINGFACEHUB_API_TOKEN'),
 )
+
 
 # pyrag.db.connection
 # pyrag.db.cursor
@@ -29,30 +29,32 @@ pyrag = PyRAG(
 # pyrag.db.drop_table('chat_messages')
 
 # chat_1 = pyrag.create_chat(
+#     model_name='gpt-3.5-turbo',
 #     name='French kitchen',
 #     system_role="You are the owner of a French kitchen and help newbies cook. Answer in English with a French accent.",
-#     # model_name='gpt-3.5-turbo',
-#     # store=True,
-#     # store_messages_history=True,
+#     store=True,
+#     store_messages_history=True,
+# )
+# chat_1_session = chat_1.create_session(name='Cooking potatoes')
+# print(chat_1_session.send('What is a potato?', retrive=False))
+# print(chat_1_session.send('How to make it mashed?', retrive=False))
+
+# chat_2 = pyrag.create_chat(
+#     model_name='gpt-3.5-turbo',
+#     name='Canada cities expert',
+#     system_role="You're an expert on Canadian cities, answer the user's questions like a geographer.",
+#     knowledge_tables=[['bc_canada_cities_csv']],
 # )
 
-# chat_1_session = chat_1.create_session(name='Cooking potatoes')
-# print(chat_1_session.send('What is a potato?'))
-# print(chat_1_session.send('How to make it mashed?'))
+# chat_2_session = chat_2.create_session()
+# print(chat_2_session.send(
+#     'What is Coquitlam?',
+#     search_kwargs={
+#         # 'min_similarity': 0.2,
+#         # 'where': {'id': 1}
+#     })
+# )
+# print(chat_2_session.send('How many people live there?', retrive=False))
 
-chat_2 = pyrag.create_chat(
-    name='Canada cities expert',
-    system_role="You're an expert on Canadian cities, answer the user's questions like a geographer.",
-    knowledge_tables=[['bc_canada_cities_csv'], ['stars_csv']],
-    # model_name='gpt-3.5-turbo',
-)
-
-chat_2_session = chat_2.create_session()
-print(chat_2_session.send(
-    'What is Coquitlam?',
-    search_kwargs={
-        'min_similarity': 0.2,
-        'where': {'id': 123123}
-    })
-)
-# print(chat_2_session.send('How many people live there?'))
+# chat_2_session_2 = chat_2.create_session()
+# print(chat_2_session_2.send('Prince George timezone'))

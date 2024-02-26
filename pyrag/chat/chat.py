@@ -28,9 +28,9 @@ class Chat:
         sessions_table_name: Optional[str] = None,
         messages_table_name: Optional[str] = None,
     ):
-        self.db = db
-        self.embeddings = embeddings
-        self.semantic_search = semantic_search
+        self._db = db
+        self._embeddings = embeddings
+        self._semantic_search = semantic_search
 
         self.id = id or 0
         self.name = name or str(uuid4())
@@ -106,10 +106,10 @@ class Chat:
             ])
 
         for table in tables_to_create:
-            self.db.create_table(*table)
+            self._db.create_table(*table)
 
     def _insert(self):
-        self.db.insert_values(self.chats_table_name, [{
+        self._db.insert_values(self.chats_table_name, [{
             'name': self.name,
             'model_name': self.model_name,
             'system_role': self.system_role,
@@ -119,7 +119,7 @@ class Chat:
             'messages_table_name': self.messages_table_name,
         }])
 
-        with self.db.cursor() as cursor:
+        with self._db.cursor() as cursor:
             try:
                 cursor.execute(f"SELECT id FROM {self.chats_table_name} WHERE name = '{self.name}'")
                 row = cursor.fetchone()
@@ -137,7 +137,7 @@ class Chat:
         else:
             query += f" WHERE name = '{self.name}'"
 
-        with self.db.cursor() as cursor:
+        with self._db.cursor() as cursor:
             try:
                 cursor.execute(query)
                 row = cursor.fetchone()
@@ -158,9 +158,9 @@ class Chat:
     ) -> ChatSession:
 
         return ChatSession(
-            db=self.db,
-            embeddings=self.embeddings,
-            semantic_search=self.semantic_search,
+            db=self._db,
+            embeddings=self._embeddings,
+            semantic_search=self._semantic_search,
             chat_id=self.id,
             model=self.model,
             store=store or self.store_messages_history,
@@ -174,5 +174,5 @@ class Chat:
 
     def delete(self):
         for table in [self.sessions_table_name, self.messages_table_name]:
-            self.db.delete_values(table, {'chat_id': self.id})
-        self.db.delete_values(self.chats_table_name, {'id': self.id})
+            self._db.delete_values(table, {'chat_id': self.id})
+        self._db.delete_values(self.chats_table_name, {'id': self.id})

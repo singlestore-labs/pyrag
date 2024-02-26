@@ -7,8 +7,8 @@ from pyrag.search.typing import SearchInput, SearchResult
 
 class BaseSearch(ABC):
     def __init__(self, db: Database, embeddings: Embeddings):
-        self.db = db
-        self.embeddings = embeddings
+        self._db = db
+        self._embeddings = embeddings
 
     @abstractmethod
     def __call__(

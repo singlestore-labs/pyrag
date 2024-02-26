@@ -24,9 +24,9 @@ class ChatSession:
         name: Optional[str] = None,
         knowledge_tables: Optional[list[list[str]]] = None,
     ):
-        self.db = db
-        self.embeddings = embeddings
-        self.semantic_search = semantic_search
+        self._db = db
+        self._embeddings = embeddings
+        self._semantic_search = semantic_search
 
         self.chat_id = chat_id
         self.store = store or False
@@ -44,7 +44,7 @@ class ChatSession:
                 self._insert()
 
         self.chain = ChatChain(
-            db=self.db,
+            db=self._db,
             model=model,
             chat_id=self.chat_id,
             session_id=self.id,
@@ -55,12 +55,12 @@ class ChatSession:
         )
 
     def _insert(self):
-        self.db.insert_values(self.table_name, [{
+        self._db.insert_values(self.table_name, [{
             'name': self.name,
             'chat_id': self.chat_id,
         }])
 
-        with self.db.cursor() as cursor:
+        with self._db.cursor() as cursor:
             try:
                 cursor.execute(f"SELECT id FROM {self.table_name} WHERE name = '{self.name}'")
                 row = cursor.fetchone()
@@ -78,7 +78,7 @@ class ChatSession:
         else:
             query += f" WHERE name = '{self.name}'"
 
-        with self.db.cursor() as cursor:
+        with self._db.cursor() as cursor:
             try:
                 cursor.execute(query)
                 row = cursor.fetchone()
@@ -103,7 +103,7 @@ class ChatSession:
             if len(knowledge_table) > 1:
                 search_kwargs['vector_column_name'] = search_kwargs.get('vector_column_name', knowledge_table[1])
 
-            result = self.semantic_search(
+            result = self._semantic_search(
                 table_name=knowledge_table[0],
                 input=input,
                 **search_kwargs
@@ -129,5 +129,5 @@ class ChatSession:
         return self.chain.predict(input=input, context=context)
 
     def delete(self):
-        self.db.delete_values(self.table_name, {'id': self.id})
-        self.db.delete_values(self.messages_table_name, {'session_id': self.id})
+        self._db.delete_values(self.table_name, {'id': self.id})
+        self._db.delete_values(self.messages_table_name, {'session_id': self.id})

@@ -12,9 +12,9 @@ class ChatManager:
         embeddings: Embeddings,
         semantic_search: SemanticSearch
     ):
-        self.db = db
-        self.embeddings = embeddings
-        self.semantic_search = semantic_search
+        self._db = db
+        self._embeddings = embeddings
+        self._semantic_search = semantic_search
 
     def create_chat(
         self,
@@ -32,9 +32,9 @@ class ChatManager:
     ):
 
         return Chat(
-            db=self.db,
-            embeddings=self.embeddings,
-            semantic_search=self.semantic_search,
+            db=self._db,
+            embeddings=self._embeddings,
+            semantic_search=self._semantic_search,
             id=id,
             name=name,
             model_name=model_name,

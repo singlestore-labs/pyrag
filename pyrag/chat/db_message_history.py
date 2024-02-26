@@ -14,7 +14,7 @@ class ChatDatabaseMessageHistory(BaseChatMessageHistory):
         session_id: int,
         messages_table_name: str,
     ):
-        self.db = db
+        self._db = db
         self.chat_id = chat_id
         self.session_id = session_id
         self.messages_table_name = messages_table_name
@@ -22,7 +22,7 @@ class ChatDatabaseMessageHistory(BaseChatMessageHistory):
     @property
     def messages(self):
         messages: Sequence[dict] = []
-        with self.db.cursor() as cursor:
+        with self._db.cursor() as cursor:
             try:
                 cursor.execute(f'''
                   SELECT message FROM {self.messages_table_name}
@@ -37,13 +37,13 @@ class ChatDatabaseMessageHistory(BaseChatMessageHistory):
         return messages_from_dict(messages)
 
     def add_message(self, message: BaseMessage) -> None:
-        self.db.insert_values(self.messages_table_name, [{
+        self._db.insert_values(self.messages_table_name, [{
             'chat_id': self.chat_id,
             'session_id': self.session_id,
             'message': dumps(message_to_dict(message)),
         }])
 
     def clear(self) -> None:
-        self.db.delete_values(self.messages_table_name, {
+        self._db.delete_values(self.messages_table_name, {
             'session_id': self.session_id
         })
