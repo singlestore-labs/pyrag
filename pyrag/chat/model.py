@@ -28,7 +28,7 @@ class ChatModel:
 
         if model_name in openai_chat_model_names:
             from langchain_openai import ChatOpenAI
-            model_kwargs['temperature'] = model_kwargs.get('temperature', 0.5)
+            model_kwargs['temperature'] = model_kwargs.get('temperature', 0.1)
             return ChatOpenAI(
                 api_key=SecretStr(environ.get('PR_OPENAI_API_KEY', '')),
                 model=model_name,

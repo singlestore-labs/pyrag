@@ -4,7 +4,7 @@ from pyrag.chat.manager import ChatManager
 from pyrag.db.database import Database
 from pyrag.embeddings.embeddings import Embeddings
 from pyrag.embeddings.typing import Embed
-from pyrag.search.semantic import SemanticSearch
+from pyrag.search.vector import VectorSearch
 
 
 class PyRAG:
@@ -24,6 +24,6 @@ class PyRAG:
         self.db = Database(connection_url)
         embeddings = Embeddings(embedding_model_name, embed)
         self.create_embeddings = embeddings.create
-        self.semantic_search = SemanticSearch(self.db, embeddings)
-        chat_manager = ChatManager(self.db, embeddings, self.semantic_search)
+        self.vector_search = VectorSearch(self.db, embeddings)
+        chat_manager = ChatManager(self.db, embeddings, self.vector_search)
         self.create_chat = chat_manager.create_chat

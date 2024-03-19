@@ -43,16 +43,14 @@ class ChatChain(LLMChain):
         )
 
         messages: list = [
-            MessagesPlaceholder(variable_name='chat_history')
+            ('system', system_role or 'You are a helpful assistant.'),
+            MessagesPlaceholder(variable_name='chat_history'),
         ]
 
         if include_context:
-            messages.append(('system', system_role or 'You are a helpful assistant.'),)
+            messages.append(('system', 'Response to the user based on the following context: {context}'))
 
-        messages.extend([
-            ('system', 'Response to the user based on the following: {context}'),
-            ('human', '{input}')
-        ])
+        messages.append(('human', '{input}'))
 
         _prompt_template = ChatPromptTemplate.from_messages(messages)
 

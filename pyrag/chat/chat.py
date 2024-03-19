@@ -6,7 +6,7 @@ from pyrag.chat.model import ChatModel
 from pyrag.chat.session import ChatSession
 from pyrag.db.database import Database
 from pyrag.embeddings.embeddings import Embeddings
-from pyrag.search.semantic import SemanticSearch
+from pyrag.search.vector import VectorSearch
 
 
 class Chat:
@@ -14,7 +14,7 @@ class Chat:
         self,
         db: Database,
         embeddings: Embeddings,
-        semantic_search: SemanticSearch,
+        vector_search: VectorSearch,
 
         id: Optional[int] = None,
         name: Optional[str] = None,
@@ -30,7 +30,7 @@ class Chat:
     ):
         self._db = db
         self._embeddings = embeddings
-        self._semantic_search = semantic_search
+        self._vector_search = vector_search
 
         self.id = id or 0
         self.name = name or str(uuid4())
@@ -160,7 +160,7 @@ class Chat:
         return ChatSession(
             db=self._db,
             embeddings=self._embeddings,
-            semantic_search=self._semantic_search,
+            vector_search=self._vector_search,
             chat_id=self.id,
             model=self.model,
             store=store or self.store_messages_history,

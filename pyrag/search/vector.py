@@ -3,7 +3,7 @@ from pyrag.search.base import BaseSearch
 from pyrag.search.typing import SearchInput
 
 
-class SemanticSearch(BaseSearch):
+class VectorSearch(BaseSearch):
     def __call__(
         self,
         table_name: str,

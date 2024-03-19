@@ -3,7 +3,7 @@ from uuid import uuid4
 
 from pyrag.db.database import Database
 from pyrag.embeddings.embeddings import Embeddings
-from pyrag.search.semantic import SemanticSearch
+from pyrag.search.vector import VectorSearch
 from pyrag.chat.chain import ChatChain, ChatModel
 
 
@@ -12,7 +12,7 @@ class ChatSession:
         self,
         db: Database,
         embeddings: Embeddings,
-        semantic_search: SemanticSearch,
+        vector_search: VectorSearch,
 
         chat_id: int,
         model: ChatModel,
@@ -26,7 +26,7 @@ class ChatSession:
     ):
         self._db = db
         self._embeddings = embeddings
-        self._semantic_search = semantic_search
+        self._vector_search = vector_search
 
         self.chat_id = chat_id
         self.store = store or False
@@ -103,7 +103,7 @@ class ChatSession:
             if len(knowledge_table) > 1:
                 search_kwargs['vector_column_name'] = search_kwargs.get('vector_column_name', knowledge_table[1])
 
-            result = self._semantic_search(
+            result = self._vector_search(
                 table_name=knowledge_table[0],
                 input=input,
                 **search_kwargs

@@ -2,7 +2,7 @@ from typing import Any, Optional
 from pyrag.chat.chat import Chat
 from pyrag.db.database import Database
 from pyrag.embeddings.embeddings import Embeddings
-from pyrag.search.semantic import SemanticSearch
+from pyrag.search.vector import VectorSearch
 
 
 class ChatManager:
@@ -10,11 +10,11 @@ class ChatManager:
         self,
         db: Database,
         embeddings: Embeddings,
-        semantic_search: SemanticSearch
+        vector_search: VectorSearch
     ):
         self._db = db
         self._embeddings = embeddings
-        self._semantic_search = semantic_search
+        self._vector_search = vector_search
 
     def create_chat(
         self,
@@ -34,7 +34,7 @@ class ChatManager:
         return Chat(
             db=self._db,
             embeddings=self._embeddings,
-            semantic_search=self._semantic_search,
+            vector_search=self._vector_search,
             id=id,
             name=name,
             model_name=model_name,
