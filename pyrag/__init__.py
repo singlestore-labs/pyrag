@@ -22,8 +22,6 @@ class PyRAG:
             os.environ['PR_HUGGINGFACEHUB_API_TOKEN'] = huggingfacehub_api_token
 
         self.db = Database(connection_url)
-        embeddings = Embeddings(embedding_model_name, embed)
-        self.create_embeddings = embeddings.create
-        self.vector_search = VectorSearch(self.db, embeddings)
-        chat_manager = ChatManager(self.db, embeddings, self.vector_search)
-        self.create_chat = chat_manager.create_chat
+        self.embeddings = Embeddings(embedding_model_name, embed)
+        self.vector_search = VectorSearch(self.db, self.embeddings)
+        self.chat = ChatManager(self.db, self.embeddings, self.vector_search)

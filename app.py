@@ -21,14 +21,14 @@ pyrag = PyRAG(
 # pyrag.db.drop_table('table')
 # pyrag.db.insert_values('table', [{'column': 'value'}])
 # pyrag.db.delete_values('table', {'id': '1'})
-# print(pyrag.semantic_search('bc_canada_cities_csv', 'Coquitlam'))
-# print(pyrag.create_embeddings('Some text here'))
+# print(pyrag.vector_search('bc_canada_cities_csv', 'Coquitlam'))
+# print(pyrag.embeddings.create('Some text here'))
 
 # pyrag.db.drop_table('chats')
 # pyrag.db.drop_table('chat_sessions')
 # pyrag.db.drop_table('chat_messages')
 
-# chat_1 = pyrag.create_chat(
+# chat_1 = pyrag.chat.create(
 #     model_name='gpt-3.5-turbo',
 #     name='French kitchen',
 #     system_role="You are the owner of a French kitchen and help newbies cook. Answer in English with a French accent.",
@@ -39,7 +39,7 @@ pyrag = PyRAG(
 # print(chat_1_session.send('What is a potato?', retrive=False))
 # print(chat_1_session.send('How to make it mashed?', retrive=False))
 
-# chat_2 = pyrag.create_chat(
+# chat_2 = pyrag.chat.create(
 #     model_name='gpt-3.5-turbo',
 #     name='Canada cities expert',
 #     system_role="You're an expert on Canadian cities, answer the user's questions like a geographer.",

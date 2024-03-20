@@ -16,7 +16,7 @@ class ChatManager:
         self._embeddings = embeddings
         self._vector_search = vector_search
 
-    def create_chat(
+    def create(
         self,
         id: Optional[int] = None,
         name: Optional[str] = None,
