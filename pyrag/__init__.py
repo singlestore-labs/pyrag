@@ -4,6 +4,7 @@ from pyrag.chat.manager import ChatManager
 from pyrag.db.database import Database
 from pyrag.embeddings.embeddings import Embeddings
 from pyrag.embeddings.typing import Embed
+from pyrag.files.manager import FilesManager
 from pyrag.search.vector import VectorSearch
 
 
@@ -25,3 +26,4 @@ class PyRAG:
         self.embeddings = Embeddings(embedding_model_name, embed)
         self.vector_search = VectorSearch(self.db, self.embeddings)
         self.chat = ChatManager(self.db, self.embeddings, self.vector_search)
+        self.files = FilesManager(self.db, self.embeddings)
