@@ -30,7 +30,7 @@ class ChatModel:
             from langchain_openai import ChatOpenAI
             model_kwargs['temperature'] = model_kwargs.get('temperature', 0.1)
             return ChatOpenAI(
-                api_key=SecretStr(environ.get('PR_OPENAI_API_KEY', '')),
+                api_key=SecretStr(environ.get('OPENAI_API_KEY', '')),
                 model=model_name,
                 **model_kwargs,
             )
@@ -38,7 +38,7 @@ class ChatModel:
         from langchain_community.llms import HuggingFaceEndpoint
         model_kwargs['temperature'] = model_kwargs.get('temperature', 0.1)
         return HuggingFaceEndpoint(
-            huggingfacehub_api_token=environ.get('PR_HUGGINGFACEHUB_API_TOKEN', ''),
+            huggingfacehub_api_token=environ.get('HUGGINGFACEHUB_API_TOKEN', ''),
             repo_id=model_name or 'huggingfaceh4/zephyr-7b-alpha',
             **model_kwargs
         )

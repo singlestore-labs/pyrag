@@ -1,5 +1,7 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime, timezone
+from io import BytesIO, StringIO
 from re import sub
+from typing import Optional
 from pandas import read_csv, read_json, DataFrame
 from PyPDF2 import PdfReader
 
@@ -7,10 +9,16 @@ from pyrag import helpers
 
 
 class File:
-    def __init__(self, name: str, extension: str, content: str) -> None:
+    def __init__(
+        self,
+        name: str, content: str | StringIO | BytesIO,
+        extension: Optional[str] = None,
+        updated_at: int = int(datetime.timestamp(datetime.now(UTC)))
+    ) -> None:
         self.name = name
-        self.extension = extension
+        self.extension = extension or self.get_extension(name)
         self.content = content
+        self.updated_at = updated_at
 
     @staticmethod
     def get_extension(name: str) -> str:
@@ -33,12 +41,12 @@ class File:
             reader = PdfReader(self.content)
             for page in reader.pages:
                 text += page.extract_text()
-            df = DataFrame(helpers.text.split_recursively(text), columns=['text'])
-        elif self.extension == 'txt':
-            df = DataFrame(helpers.text.split_recursively(self.content), columns=['text'])
+            df = DataFrame(helpers.text.split(text), columns=['text'])
+        elif self.extension == 'txt' and type(self.content) == str:
+            df = DataFrame(helpers.text.split(self.content), columns=['text'])
         else:
             raise ValueError('Unsupported file format')
 
-        df['created_at'] = datetime.now().astimezone(timezone.utc)
+        df['updated_at'] = self.updated_at
 
         return df

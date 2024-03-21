@@ -18,9 +18,9 @@ class PyRAG:
         huggingfacehub_api_token: Optional[str] = None,
     ):
         if openai_api_key:
-            os.environ['PR_OPENAI_API_KEY'] = openai_api_key
+            os.environ['OPENAI_API_KEY'] = openai_api_key
         if huggingfacehub_api_token:
-            os.environ['PR_HUGGINGFACEHUB_API_TOKEN'] = huggingfacehub_api_token
+            os.environ['HUGGINGFACEHUB_API_TOKEN'] = huggingfacehub_api_token
 
         self.db = Database(connection_url)
         self.embeddings = Embeddings(embedding_model_name, embed)

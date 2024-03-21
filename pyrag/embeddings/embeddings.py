@@ -26,7 +26,7 @@ class Embeddings:
             model_name = model_name or openai_embedding_model_names[0]
             self.model = BaseEmbeddings(
                 OpenAIEmbeddings(
-                    api_key=SecretStr(environ.get('PR_OPENAI_API_KEY', '')),
+                    api_key=SecretStr(environ.get('OPENAI_API_KEY', '')),
                     model=model_name,
                 ).embed_documents
             )
@@ -36,7 +36,7 @@ class Embeddings:
             model_name = model_name or 'sentence-transformers/all-MiniLM-L6-v2'
             self.model = BaseEmbeddings(
                 HuggingFaceInferenceAPIEmbeddings(
-                    api_key=SecretStr(environ.get('PR_HUGGINGFACEHUB_API_TOKEN', '')),
+                    api_key=SecretStr(environ.get('HUGGINGFACEHUB_API_TOKEN', '')),
                     model_name=model_name,
                 ).embed_documents
             )

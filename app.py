@@ -58,3 +58,8 @@ pyrag = PyRAG(
 
 # chat_2_session_2 = chat_2.create_session()
 # print(chat_2_session_2.send('Prince George timezone'))
+
+
+s3 = pyrag.files.s3()
+for i in s3.get_files():
+    pass
