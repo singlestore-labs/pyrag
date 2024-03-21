@@ -13,6 +13,7 @@ class PyRAG:
         self,
         connection_url: str,
         embedding_model_name: Optional[str] = None,
+        embedding_dimension: Optional[int] = None,
         embed: Optional[Embed] = None,
         openai_api_key: Optional[str] = None,
         huggingfacehub_api_token: Optional[str] = None,
@@ -23,7 +24,7 @@ class PyRAG:
             os.environ['HUGGINGFACEHUB_API_TOKEN'] = huggingfacehub_api_token
 
         self.db = Database(connection_url)
-        self.embeddings = Embeddings(embedding_model_name, embed)
+        self.embeddings = Embeddings(embedding_model_name, embedding_dimension, embed)
         self.vector_search = VectorSearch(self.db, self.embeddings)
         self.chat = ChatManager(self.db, self.embeddings, self.vector_search)
         self.files = FilesManager(self.db, self.embeddings)

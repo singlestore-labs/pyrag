@@ -1,8 +1,7 @@
 from datetime import datetime
 from io import BytesIO, StringIO
-from typing import Callable, Optional
+from typing import Callable
 import boto3
-from os import environ
 from pyrag.db.database import Database
 from pyrag.embeddings.embeddings import Embeddings
 from pyrag.files.file import File

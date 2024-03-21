@@ -24,5 +24,5 @@ class FilesManager:
             embeddings=self._embeddings,
             access_key_id=access_key_id,
             secret_access_key=secret_access_key,
-            bucket_name=bucket_name
+            bucket_name=bucket_name,
         )

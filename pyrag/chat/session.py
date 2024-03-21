@@ -101,7 +101,7 @@ class ChatSession:
 
         for knowledge_table in self.knowledge_tables:
             if len(knowledge_table) > 1:
-                search_kwargs['vector_column_name'] = search_kwargs.get('vector_column_name', knowledge_table[1])
+                search_kwargs['vector_column_name'] = search_kwargs.get('vector_column_name', knowledge_table[1] or 'v')
 
             result = self._vector_search(
                 table_name=knowledge_table[0],

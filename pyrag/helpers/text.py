@@ -1,7 +1,7 @@
 from langchain_text_splitters import CharacterTextSplitter, RecursiveCharacterTextSplitter
 
 
-def split(text: str, separator="\n\n", chunk_size=1024, chunk_overlap=126, *args, **kwargs):
+def split(text: str, separator="", chunk_size=1024, chunk_overlap=128, *args, **kwargs):
     return CharacterTextSplitter(
         separator=separator,
         chunk_size=chunk_size,
@@ -13,7 +13,7 @@ def split(text: str, separator="\n\n", chunk_size=1024, chunk_overlap=126, *args
     ).split_text(text)
 
 
-def split_recursively(text: str, chunk_size=1024, chunk_overlap=126, *args, **kwargs):
+def split_recursively(text: str, chunk_size=1024, chunk_overlap=128, *args, **kwargs):
     return RecursiveCharacterTextSplitter(
         chunk_size=chunk_size,
         chunk_overlap=chunk_overlap,

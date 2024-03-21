@@ -29,7 +29,7 @@ class File:
     def serialize_name(name: str) -> str:
         return sub(r'\W', '_', name)
 
-    def content_to_df(self) -> DataFrame:
+    def content_to_df(self, content_column_name: str = 'content') -> DataFrame:
         df: DataFrame
 
         if self.extension == 'csv':
@@ -41,9 +41,9 @@ class File:
             reader = PdfReader(self.content)
             for page in reader.pages:
                 text += page.extract_text()
-            df = DataFrame(helpers.text.split(text), columns=['text'])
+            df = DataFrame(helpers.text.split_recursively(text), columns=[content_column_name])
         elif self.extension == 'txt' and type(self.content) == str:
-            df = DataFrame(helpers.text.split(self.content), columns=['text'])
+            df = DataFrame(helpers.text.split_recursively(self.content), columns=[content_column_name])
         else:
             raise ValueError('Unsupported file format')
 
