@@ -60,6 +60,4 @@ pyrag = PyRAG(
 # print(chat_2_session_2.send('Prince George timezone'))
 
 
-s3 = pyrag.files.s3()
-for i in s3.get_files():
-    pass
+pyrag.files.s3().sync()

@@ -1,5 +1,6 @@
 from datetime import datetime
 from io import BytesIO, StringIO
+from typing import Callable, Optional
 import boto3
 from os import environ
 from pyrag.db.database import Database
@@ -48,13 +49,17 @@ class S3FilesSource(BaseFilesSource):
             print(e)
             return ''
 
-    def get_files(self) -> list[File]:
+    def get_files(self, is_ignored_file: Callable[[str, int], bool]) -> list[File]:
         files: list[File] = []
 
         for file in self._get_files():
             name = file['Key']
-            content = self._get_file_content(name)
             updated_at = int(datetime.timestamp(file['LastModified']))
+
+            if is_ignored_file and is_ignored_file(name, updated_at):
+                continue
+
+            content = self._get_file_content(name)
             files.append(File(name, content, updated_at=updated_at))
 
         return files

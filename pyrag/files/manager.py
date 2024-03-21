@@ -17,7 +17,7 @@ class FilesManager:
         self,
         access_key_id: str = environ.get('AWS_ACCESS_KEY_ID', ''),
         secret_access_key: str = environ.get('AWS_SECRET_ACCESS_KEY', ''),
-        bucket_name: str = environ.get('AWS_BUCKET_NAME', '')
+        bucket_name: str = environ.get('AWS_BUCKET_NAME', ''),
     ):
         return S3FilesSource(
             db=self._db,
