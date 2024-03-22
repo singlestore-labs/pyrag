@@ -7,12 +7,7 @@ from pyrag.files.source.base import BaseFilesSource
 
 
 class URLFilesSource(BaseFilesSource):
-    def sync_file(
-        self,
-        url: str,
-        name: Optional[str] = None,
-        content_chunk_size: int = 1024
-    ):
+    def sync_file(self, url: str, name: Optional[str] = None, content_chunk_size: int = 1024):
         if not name:
             parts = url.split('/')
             name = parts[-1] if len(parts) > 1 else ''

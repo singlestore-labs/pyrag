@@ -26,11 +26,11 @@ pyrag = PyRAG(
 # pyrag.db.drop_table('chat_messages')
 
 # pyrag.db.drop_table('dataset_s_products_json')
-# pyrag.files.url.sync_file(
-#     "https://raw.githubusercontent.com/singlestore-labs/kai-estore/main/apps/server/src/data/dataset-s/dataset-s-products.json",
-# )
+pyrag.files.url.sync_file(
+    "https://raw.githubusercontent.com/singlestore-labs/kai-estore/main/apps/server/src/data/dataset-s/dataset-s-products.json",
+)
 
-# pyrag.files.s3().sync_files()
+pyrag.files.s3().sync_files()
 
 # chat = pyrag.chat.create(
 #     model_name='gpt-3.5-turbo',

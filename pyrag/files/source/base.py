@@ -83,13 +83,11 @@ class BaseFilesSource:
         is_updated = True if ignore_is_updated else self._is_file_updated(table_name, file.updated_at)
 
         if is_exists and is_updated:
-            return table_name
+            return
 
         self._db.drop_table(table_name)
         self._create_file_table(table_name, content_column_name, vector_column_name)
         self._insert_file(file, table_name, content_column_name, vector_column_name, content_chunk_size)
-
-        return table_name
 
     def _sync_files(
         self,
@@ -98,18 +96,10 @@ class BaseFilesSource:
         vector_column_name: Optional[str] = None,
         content_chunk_size: int = 1024,
     ):
-        file_table_names = []
-        existed_table_names = self._db.get_table_names()
-
         for file in files:
-            table_name = self._sync_file(
+            self._sync_file(
                 file,
                 content_column_name,
                 vector_column_name,
                 content_chunk_size=content_chunk_size
             )
-            file_table_names.append(table_name)
-
-        for existed_table_name in existed_table_names:
-            if not existed_table_name in file_table_names:
-                self._db.drop_table(existed_table_name)
