@@ -1,14 +1,16 @@
 from json import dumps
 from typing import Optional
 
+from pandas import DataFrame
+
 from pyrag.db.database import Database
 from pyrag.embeddings.embeddings import Embeddings
 from pyrag.files.file import File
 
 
-def list_to_chunks(list: list, chunk_size: int):
-    for i in range(0, len(list), chunk_size):
-        yield list[i:i + chunk_size]
+def df_to_chunks(df: DataFrame, chunk_size: int):
+    for i in range(0, df.shape[0], chunk_size):
+        yield df[i:i + chunk_size].copy()
 
 
 class BaseFilesSource:
@@ -41,17 +43,21 @@ class BaseFilesSource:
         vector_column_name: str,
         content_chunk_size: int = 1024,
     ):
+        index = 0
         df = file.content_to_df(content_column_name, chunk_size=content_chunk_size)
-        records = [dumps(i) for i in df.to_dict('records')]
-        df['embedding'] = [str(i) for i in self._embeddings.create(records)]
 
-        values = []
-        for i, row in df.iterrows():
-            embedding = row.pop('embedding')
-            content = row.to_json()
-            values.append((i, row['updated_at'], content, embedding))
+        def process_records(df: DataFrame):
+            values = []
+            records = [dumps(i) for i in df.to_dict('records')]
+            df['embedding'] = [str(i) for i in self._embeddings.create(records)]
 
-        def insert_values(values: list[tuple]):
+            for i, row in df.iterrows():
+                nonlocal index
+                embedding = row.pop('embedding')
+                content = row.to_json()
+                values.append((index, row['updated_at'], content, embedding))
+                index += 1
+
             with self._db.cursor() as cursor:
                 cursor.executemany(f'''
                     INSERT INTO {table_name} (_index, updated_at, {content_column_name}, {vector_column_name})
@@ -59,11 +65,11 @@ class BaseFilesSource:
                 ''', values)
                 cursor.fetchall()
 
-        if len(values) > 10000:
-            for values_chunk in list_to_chunks(values, 10000):
-                insert_values(values_chunk)
+        if len(df) > 500:
+            for df_chunk in df_to_chunks(df, 500):
+                process_records(df_chunk)
         else:
-            insert_values(values)
+            process_records(df)
 
     def _is_file_updated(self, table_name: str, updated_at: int):
         try:
