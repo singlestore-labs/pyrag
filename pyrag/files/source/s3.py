@@ -1,4 +1,3 @@
-from datetime import datetime
 from io import BytesIO, StringIO
 from typing import Callable
 import boto3
@@ -53,7 +52,7 @@ class S3FilesSource(BaseFilesSource):
 
         for file in self._get_files():
             name = file['Key']
-            updated_at = int(datetime.timestamp(file['LastModified']))
+            updated_at = int(file['LastModified'].timestamp())
 
             if is_ignored_file and is_ignored_file(name, updated_at):
                 continue

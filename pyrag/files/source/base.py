@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from datetime import datetime, timezone
 from json import dumps
 from typing import Callable, Optional
 
@@ -26,7 +25,7 @@ class BaseFilesSource(ABC):
         self._db.create_table(table_name, [
             ('id', 'BIGINT AUTO_INCREMENT PRIMARY KEY'),
             ('_index', 'BIGINT'),
-            ('updated_at', 'DATETIME'),
+            ('updated_at', 'INT'),
             (content_column_name or 'content', 'LONGTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci'),
             (vector_column_name or 'v', f'VECTOR({self._embeddings.dimension}) NOT NULL'),
         ])
@@ -48,15 +47,14 @@ class BaseFilesSource(ABC):
                 if type(result) != tuple:
                     return False
 
-                # ! TODO: Fix timezone
-                timestamp = int(datetime.timestamp(result[0]))
-                return timestamp >= updated_at
+                return result[0] >= updated_at
         except Exception as e:
             print(e)
             return False
 
     def _insert_file(self, file: File, table_name: str, content_column_name: str, vector_column_name: str):
         content_column_name = content_column_name or 'content'
+        vector_column_name = vector_column_name or 'v'
         df = file.content_to_df(content_column_name)
         records = [dumps(i) for i in df.to_dict('records')]
         df['embedding'] = [str(i) for i in self._embeddings.create(records)]
@@ -70,7 +68,7 @@ class BaseFilesSource(ABC):
         with self._db.cursor() as cursor:
             cursor.executemany(f'''
                 INSERT INTO {table_name} (_index, updated_at, {content_column_name}, {vector_column_name})
-                VALUES (%s, FROM_UNIXTIME(%s), %s, %s)
+                VALUES (%s, %s, %s, %s)
             ''', values)
             cursor.fetchall()
 
