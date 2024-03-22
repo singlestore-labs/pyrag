@@ -2,6 +2,7 @@ from os import environ
 from pyrag.db.database import Database
 from pyrag.embeddings.embeddings import Embeddings
 from pyrag.files.source.s3 import S3FilesSource
+from pyrag.files.source.url import URLFilesSource
 
 
 class FilesManager:
@@ -12,6 +13,7 @@ class FilesManager:
     ):
         self._db = db
         self._embeddings = embeddings
+        self.url = URLFilesSource(self._db, self._embeddings)
 
     def s3(
         self,

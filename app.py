@@ -23,13 +23,15 @@ pyrag = PyRAG(
 # pyrag.db.delete_values('table', {'id': '1'})
 # print(pyrag.vector_search('bc_canada_cities_csv', 'Coquitlam'))
 # print(pyrag.embeddings.create('Some text here'))
-
 # pyrag.db.drop_table('chats')
 # pyrag.db.drop_table('chat_sessions')
 # pyrag.db.drop_table('chat_messages')
 
+# pyrag.files.url.sync_file(
+#     "https://raw.githubusercontent.com/singlestore-labs/kai-estore/main/apps/server/src/data/dataset-s/dataset-s-products.json"
+# )
 
-pyrag.files.s3().sync_files()
+# pyrag.files.s3().sync_files()
 
 # chat = pyrag.chat.create(
 #     model_name='gpt-3.5-turbo',
