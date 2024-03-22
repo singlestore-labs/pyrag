@@ -43,7 +43,9 @@ class S3FilesSource(BaseFilesSource):
         min_updated_at: Optional[int] = None,
         content_column_name: Optional[str] = 'content',
         vector_column_name: Optional[str] = 'v',
+        ignore_is_updated: Optional[bool] = False,
         content_chunk_size: int = 1024,
+        content_chunk_overlap: int = 128
     ):
         files: list[File] = []
 
@@ -57,4 +59,11 @@ class S3FilesSource(BaseFilesSource):
             content = self._get_file_content(name)
             files.append(File(name, content, updated_at=updated_at))
 
-        self._sync_files(files, content_column_name, vector_column_name, content_chunk_size=content_chunk_size)
+        self._sync_files(
+            files=files,
+            content_column_name=content_column_name,
+            vector_column_name=vector_column_name,
+            ignore_is_updated=ignore_is_updated,
+            content_chunk_size=content_chunk_size,
+            content_chunk_overlap=content_chunk_overlap
+        )

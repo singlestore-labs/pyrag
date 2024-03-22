@@ -25,10 +25,11 @@ pyrag = PyRAG(
 # pyrag.db.drop_table('chat_sessions')
 # pyrag.db.drop_table('chat_messages')
 
-# pyrag.db.drop_table('dataset_m_products_json')
+# pyrag.db.drop_table('dataset_s_products_json')
 # pyrag.files.url.sync_file(
-#     "https://raw.githubusercontent.com/singlestore-labs/kai-estore/main/apps/server/src/data/dataset-m/dataset-m-products.json",
-# )
+#     "https://raw.githubusercontent.com/singlestore-labs/kai-estore/main/apps/server/src/data/dataset-s/dataset-s-products.json",
+#     content_chunk_size=100)
+
 
 # pyrag.files.s3().sync_files()
 

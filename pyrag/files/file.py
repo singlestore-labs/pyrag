@@ -1,4 +1,4 @@
-from datetime import UTC, datetime, timezone
+from datetime import UTC, datetime
 from io import BytesIO, StringIO
 from re import sub
 from typing import Optional
@@ -29,7 +29,12 @@ class File:
     def serialize_name(name: str) -> str:
         return sub(r'\W', '_', name)
 
-    def content_to_df(self, content_column_name: str = 'content', chunk_size: int = 1024) -> DataFrame:
+    def content_to_df(
+        self,
+        content_column_name: str = 'content',
+        chunk_size: int = 1024,
+        chunk_overlap: int = 128
+    ) -> DataFrame:
         df: DataFrame
 
         if self.extension == 'csv':
@@ -42,11 +47,11 @@ class File:
             for page in reader.pages:
                 text += page.extract_text()
             df = DataFrame(
-                helpers.text.split_recursively(text, chunk_size=chunk_size), columns=[content_column_name]
+                helpers.text.split_recursively(text, chunk_size, chunk_overlap), columns=[content_column_name]
             )
         elif self.extension == 'txt' and type(self.content) == str:
             df = DataFrame(
-                helpers.text.split_recursively(self.content, chunk_size=chunk_size), columns=[content_column_name]
+                helpers.text.split_recursively(self.content, chunk_size, chunk_overlap), columns=[content_column_name]
             )
         else:
             raise ValueError('Unsupported file format')

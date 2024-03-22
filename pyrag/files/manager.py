@@ -6,11 +6,7 @@ from pyrag.files.source.url import URLFilesSource
 
 
 class FilesManager:
-    def __init__(
-        self,
-        db: Database,
-        embeddings: Embeddings
-    ):
+    def __init__(self, db: Database, embeddings: Embeddings):
         self._db = db
         self._embeddings = embeddings
         self.url = URLFilesSource(self._db, self._embeddings)

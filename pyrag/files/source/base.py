@@ -23,13 +23,13 @@ class BaseFilesSource:
             ('id', 'BIGINT AUTO_INCREMENT PRIMARY KEY'),
             ('_index', 'BIGINT'),
             ('updated_at', 'INT'),
-            (content_column_name or 'content', 'LONGTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci'),
-            (vector_column_name or 'v', f'VECTOR({self._embeddings.dimension}) NOT NULL'),
+            (content_column_name, 'LONGTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci'),
+            (vector_column_name, f'VECTOR({self._embeddings.dimension}) NOT NULL'),
         ])
 
         with self._db.cursor() as cursor:
             cursor.execute(f'''
-                ALTER TABLE {table_name} ADD VECTOR INDEX vector_index (v)
+                ALTER TABLE {table_name} ADD VECTOR INDEX vector_index ({vector_column_name})
                 INDEX_OPTIONS '{{"index_type": "IVF_PQ", "nlist": 4000}}'
             ''')
 
@@ -42,9 +42,10 @@ class BaseFilesSource:
         content_column_name: str,
         vector_column_name: str,
         content_chunk_size: int = 1024,
+        content_chunk_overlap: int = 128
     ):
         index = 0
-        df = file.content_to_df(content_column_name, chunk_size=content_chunk_size)
+        df = file.content_to_df(content_column_name, chunk_size=content_chunk_size, chunk_overlap=content_chunk_overlap)
 
         def process_records(df: DataFrame):
             values = []
@@ -89,6 +90,7 @@ class BaseFilesSource:
         vector_column_name: Optional[str] = None,
         ignore_is_updated: Optional[bool] = False,
         content_chunk_size: int = 1024,
+        content_chunk_overlap: int = 128
     ):
         content_column_name = content_column_name or 'content'
         vector_column_name = vector_column_name or 'v'
@@ -101,19 +103,30 @@ class BaseFilesSource:
 
         self._db.drop_table(table_name)
         self._create_file_table(table_name, content_column_name, vector_column_name)
-        self._insert_file(file, table_name, content_column_name, vector_column_name, content_chunk_size)
+        self._insert_file(
+            file=file,
+            table_name=table_name,
+            content_column_name=content_column_name,
+            vector_column_name=vector_column_name,
+            content_chunk_size=content_chunk_size,
+            content_chunk_overlap=content_chunk_overlap
+        )
 
     def _sync_files(
         self,
         files: list[File],
         content_column_name: Optional[str] = None,
         vector_column_name: Optional[str] = None,
+        ignore_is_updated: Optional[bool] = False,
         content_chunk_size: int = 1024,
+        content_chunk_overlap: int = 128
     ):
         for file in files:
             self._sync_file(
-                file,
-                content_column_name,
-                vector_column_name,
-                content_chunk_size=content_chunk_size
+                file=file,
+                content_column_name=content_column_name,
+                vector_column_name=vector_column_name,
+                ignore_is_updated=ignore_is_updated,
+                content_chunk_size=content_chunk_size,
+                content_chunk_overlap=content_chunk_overlap
             )
