@@ -6,12 +6,13 @@ from pyrag.embeddings.embeddings import Embeddings
 from pyrag.files.file import File
 
 
+def list_to_chunks(list: list, chunk_size: int):
+    for i in range(0, len(list), chunk_size):
+        yield list[i:i + chunk_size]
+
+
 class BaseFilesSource:
-    def __init__(
-        self,
-        db: Database,
-        embeddings: Embeddings
-    ):
+    def __init__(self, db: Database, embeddings: Embeddings):
         self._db = db
         self._embeddings = embeddings
 
@@ -50,12 +51,19 @@ class BaseFilesSource:
             content = row.to_json()
             values.append((i, row['updated_at'], content, embedding))
 
-        with self._db.cursor() as cursor:
-            cursor.executemany(f'''
-                INSERT INTO {table_name} (_index, updated_at, {content_column_name}, {vector_column_name})
-                VALUES (%s, %s, %s, %s)
-            ''', values)
-            cursor.fetchall()
+        def insert_values(values: list[tuple]):
+            with self._db.cursor() as cursor:
+                cursor.executemany(f'''
+                    INSERT INTO {table_name} (_index, updated_at, {content_column_name}, {vector_column_name})
+                    VALUES (%s, %s, %s, %s)
+                ''', values)
+                cursor.fetchall()
+
+        if len(values) > 10000:
+            for values_chunk in list_to_chunks(values, 10000):
+                insert_values(values_chunk)
+        else:
+            insert_values(values)
 
     def _is_file_updated(self, table_name: str, updated_at: int):
         try:
