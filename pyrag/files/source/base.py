@@ -32,8 +32,15 @@ class BaseFilesSource:
 
             cursor.fetchall()
 
-    def _insert_file(self, file: File, table_name: str, content_column_name: str, vector_column_name: str):
-        df = file.content_to_df(content_column_name)
+    def _insert_file(
+        self,
+        file: File,
+        table_name: str,
+        content_column_name: str,
+        vector_column_name: str,
+        content_chunk_size: int = 1024,
+    ):
+        df = file.content_to_df(content_column_name, chunk_size=content_chunk_size)
         records = [dumps(i) for i in df.to_dict('records')]
         df['embedding'] = [str(i) for i in self._embeddings.create(records)]
 
@@ -65,20 +72,22 @@ class BaseFilesSource:
         self,
         file: File,
         content_column_name: Optional[str] = None,
-        vector_column_name: Optional[str] = None
+        vector_column_name: Optional[str] = None,
+        ignore_is_updated: Optional[bool] = False,
+        content_chunk_size: int = 1024,
     ):
         content_column_name = content_column_name or 'content'
         vector_column_name = vector_column_name or 'v'
         table_name = File.serialize_name(file.name)
         is_exists = self._db.is_table_exists(table_name)
-        is_updated = self._is_file_updated(table_name, file.updated_at)
+        is_updated = True if ignore_is_updated else self._is_file_updated(table_name, file.updated_at)
 
         if is_exists and is_updated:
             return table_name
 
         self._db.drop_table(table_name)
         self._create_file_table(table_name, content_column_name, vector_column_name)
-        self._insert_file(file, table_name, content_column_name, vector_column_name)
+        self._insert_file(file, table_name, content_column_name, vector_column_name, content_chunk_size)
 
         return table_name
 
@@ -87,12 +96,18 @@ class BaseFilesSource:
         files: list[File],
         content_column_name: Optional[str] = None,
         vector_column_name: Optional[str] = None,
+        content_chunk_size: int = 1024,
     ):
         file_table_names = []
         existed_table_names = self._db.get_table_names()
 
         for file in files:
-            table_name = self._sync_file(file, content_column_name, vector_column_name)
+            table_name = self._sync_file(
+                file,
+                content_column_name,
+                vector_column_name,
+                content_chunk_size=content_chunk_size
+            )
             file_table_names.append(table_name)
 
         for existed_table_name in existed_table_names:

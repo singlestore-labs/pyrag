@@ -3,7 +3,6 @@ import os
 from pyrag import PyRAG
 from dotenv import load_dotenv
 
-
 load_dotenv()
 
 connection_url = os.environ.get('DB_CONNECTION_URL') or ''
@@ -13,7 +12,6 @@ pyrag = PyRAG(
     openai_api_key=os.environ.get('OPENAI_API_KEY'),
     huggingfacehub_api_token=os.environ.get('HUGGINGFACEHUB_API_TOKEN'),
 )
-
 
 # pyrag.db.connection
 # pyrag.db.cursor
@@ -27,8 +25,9 @@ pyrag = PyRAG(
 # pyrag.db.drop_table('chat_sessions')
 # pyrag.db.drop_table('chat_messages')
 
+# pyrag.db.drop_table('dataset_s_products_json')
 # pyrag.files.url.sync_file(
-#     "https://raw.githubusercontent.com/singlestore-labs/kai-estore/main/apps/server/src/data/dataset-s/dataset-s-products.json"
+#     "https://raw.githubusercontent.com/singlestore-labs/kai-estore/main/apps/server/src/data/dataset-s/dataset-s-products.json",
 # )
 
 # pyrag.files.s3().sync_files()
