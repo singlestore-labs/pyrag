@@ -48,9 +48,9 @@ class ChatChain(LLMChain):
         ]
 
         if include_context:
-            messages.append(('system', 'Response to the user based on the following context: {context}'))
+            messages.append(('human', 'context: {context}'))
 
-        messages.append(('human', '{input}'))
+        messages.append(('human', 'input: {input}'))
 
         _prompt_template = ChatPromptTemplate.from_messages(messages)
 

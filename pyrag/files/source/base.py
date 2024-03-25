@@ -126,7 +126,7 @@ class BaseFilesSource:
         for file in files:
             self._sync_file(
                 file=file,
-                table_name=table_names[file.name],
+                table_name=table_names.get(file.name, ''),
                 content_column_name=content_column_name,
                 vector_column_name=vector_column_name,
                 ignore_is_updated=ignore_is_updated,

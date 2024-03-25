@@ -40,7 +40,8 @@ class S3FilesSource(BaseFilesSource):
     def sync_files(
         self,
         table_names: dict = {},
-        ignored_file_names: list[str] = [],
+        allowed_files: list[str] = [],
+        ignored_files: list[str] = [],
         min_updated_at: Optional[int] = None,
         content_column_name: Optional[str] = 'content',
         vector_column_name: Optional[str] = 'v',
@@ -54,7 +55,10 @@ class S3FilesSource(BaseFilesSource):
             name = file['Key']
             updated_at = int(file['LastModified'].timestamp())
 
-            if name in ignored_file_names or (min_updated_at and updated_at < min_updated_at):
+            if len(allowed_files) and not name in allowed_files:
+                continue
+
+            if name in ignored_files or (min_updated_at and updated_at < min_updated_at):
                 continue
 
             content = self._get_file_content(name)

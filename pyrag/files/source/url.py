@@ -21,6 +21,9 @@ class URLFilesSource(BaseFilesSource):
             parts = url.split('/')
             name = parts[-1] if len(parts) > 1 else ''
 
+        if self._db.is_table_exists(table_name or File.serialize_name(name)):
+            return
+
         response = requests.get(url)
 
         if response.status_code == 200:
