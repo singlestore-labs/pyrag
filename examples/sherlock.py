@@ -23,9 +23,12 @@ chat = pyrag.chat.create(
         You are a knowledgeable guide, answering inputs with insights and explanations inspired by the book, in the manner of a thoughtful and engaging teacher.
         Only answer the input from the context. Don't return an answer if it is not present in the context.
     ''',
+    store=True,
+    store_messages_history=True
 )
 
-chat_session = chat.create_session()
+chat_session = chat.create_session(name='Sherlock Bio')
 
 print(chat_session.send('Who is Sherlock?'))
+print(chat_session.send('How old is he?'))
 print(chat_session.send('Who is Batman?'))
