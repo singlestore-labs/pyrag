@@ -5,10 +5,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-connection_url = os.environ.get('DB_CONNECTION_URL') or ''
-
 pyrag = PyRAG(
-    connection_url,
+    connection_url=os.environ.get('DB_CONNECTION_URL', ''),
     embedding_model_name='text-embedding-3-small',
     openai_api_key=os.environ.get('OPENAI_API_KEY'),
 )

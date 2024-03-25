@@ -10,10 +10,13 @@ certifi==2024.2.2
 charset-normalizer==3.3.2
 dataclasses-json==0.6.4
 distro==1.9.0
+filelock==3.13.3
 frozenlist==1.4.1
+fsspec==2024.3.1
 h11==0.14.0
 httpcore==1.0.4
 httpx==0.27.0
+huggingface-hub==0.22.0
 idna==3.6
 jmespath==1.0.1
 jsonpatch==1.33
@@ -38,7 +41,7 @@ pydantic_core==2.16.3
 PyJWT==2.8.0
 PyPDF2==3.0.1
 pyproject_hooks==1.0.0
--e git+ssh://git@gitlab.com/singlestore/marketing/pyrag.git@9534685c503dc282e0092e6e31ca8e02e5e02cd3#egg=PyRAG
+-e git+ssh://git@gitlab.com/singlestore/marketing/pyrag.git@f1a065e9e67176b78bb2ec74a59a693f4c374c64#egg=PyRAG
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
 pytz==2024.1
