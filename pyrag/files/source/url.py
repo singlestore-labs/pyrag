@@ -11,6 +11,7 @@ class URLFilesSource(BaseFilesSource):
         self,
         url: str,
         name: Optional[str] = None,
+        table_name: Optional[str] = None,
         content_column_name: Optional[str] = None,
         vector_column_name: Optional[str] = None,
         content_chunk_size: int = 1024,
@@ -35,6 +36,7 @@ class URLFilesSource(BaseFilesSource):
             file = File(name, content)
             self._sync_file(
                 file=file,
+                table_name=table_name,
                 content_column_name=content_column_name,
                 vector_column_name=vector_column_name,
                 ignore_is_updated=True,

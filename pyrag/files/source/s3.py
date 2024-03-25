@@ -39,6 +39,7 @@ class S3FilesSource(BaseFilesSource):
 
     def sync_files(
         self,
+        table_names: dict = {},
         ignored_file_names: list[str] = [],
         min_updated_at: Optional[int] = None,
         content_column_name: Optional[str] = 'content',
@@ -61,6 +62,7 @@ class S3FilesSource(BaseFilesSource):
 
         self._sync_files(
             files=files,
+            table_names=table_names,
             content_column_name=content_column_name,
             vector_column_name=vector_column_name,
             ignore_is_updated=ignore_is_updated,

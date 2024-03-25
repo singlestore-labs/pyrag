@@ -86,6 +86,7 @@ class BaseFilesSource:
     def _sync_file(
         self,
         file: File,
+        table_name: Optional[str] = None,
         content_column_name: Optional[str] = None,
         vector_column_name: Optional[str] = None,
         ignore_is_updated: Optional[bool] = False,
@@ -94,18 +95,18 @@ class BaseFilesSource:
     ):
         content_column_name = content_column_name or 'content'
         vector_column_name = vector_column_name or 'v'
-        table_name = File.serialize_name(file.name)
-        is_exists = self._db.is_table_exists(table_name)
-        is_updated = True if ignore_is_updated else self._is_file_updated(table_name, file.updated_at)
+        _table_name = table_name or File.serialize_name(file.name)
+        is_exists = self._db.is_table_exists(_table_name)
+        is_updated = True if ignore_is_updated else self._is_file_updated(_table_name, file.updated_at)
 
         if is_exists and is_updated:
             return
 
-        self._db.drop_table(table_name)
-        self._create_file_table(table_name, content_column_name, vector_column_name)
+        self._db.drop_table(_table_name)
+        self._create_file_table(_table_name, content_column_name, vector_column_name)
         self._insert_file(
             file=file,
-            table_name=table_name,
+            table_name=_table_name,
             content_column_name=content_column_name,
             vector_column_name=vector_column_name,
             content_chunk_size=content_chunk_size,
@@ -115,6 +116,7 @@ class BaseFilesSource:
     def _sync_files(
         self,
         files: list[File],
+        table_names: dict = {},
         content_column_name: Optional[str] = None,
         vector_column_name: Optional[str] = None,
         ignore_is_updated: Optional[bool] = False,
@@ -124,6 +126,7 @@ class BaseFilesSource:
         for file in files:
             self._sync_file(
                 file=file,
+                table_name=table_names[file.name],
                 content_column_name=content_column_name,
                 vector_column_name=vector_column_name,
                 ignore_is_updated=ignore_is_updated,
