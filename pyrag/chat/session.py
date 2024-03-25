@@ -1,6 +1,7 @@
 from typing import Any, Optional
 from uuid import uuid4
 
+from pyrag.chat.knowledge import KnowledgeSource
 from pyrag.db.database import Database
 from pyrag.embeddings.embeddings import Embeddings
 from pyrag.search.vector import VectorSearch
@@ -22,7 +23,7 @@ class ChatSession:
         messages_table_name: str,
         id: Optional[int] = None,
         name: Optional[str] = None,
-        knowledge_tables: Optional[list[list[str]]] = None,
+        knowledge_sources: list[KnowledgeSource] = [],
     ):
         self._db = db
         self._embeddings = embeddings
@@ -31,7 +32,7 @@ class ChatSession:
         self.chat_id = chat_id
         self.store = store or False
         self.system_role = system_role
-        self.knowledge_tables = knowledge_tables or []
+        self.knowledge_sources = knowledge_sources or []
         self.table_name = table_name
         self.messages_table_name = messages_table_name
         self.id = id or 0
@@ -51,7 +52,7 @@ class ChatSession:
             store=self.store,
             messages_table_name=self.messages_table_name,
             system_role=self.system_role,
-            include_context=bool(len(self.knowledge_tables))
+            include_context=bool(len(self.knowledge_sources))
         )
 
     def _insert(self):
@@ -94,17 +95,18 @@ class ChatSession:
         input: str,
         search_kwargs: dict[str, Any] = {}
     ):
-        if not len(self.knowledge_tables):
+        if not len(self.knowledge_sources):
             return None
 
         results = []
 
-        for knowledge_table in self.knowledge_tables:
-            if len(knowledge_table) > 1:
-                search_kwargs['vector_column_name'] = search_kwargs.get('vector_column_name', knowledge_table[1] or 'v')
+        for knowledge_source in self.knowledge_sources:
+            search_kwargs['vector_column_name'] = search_kwargs.get(
+                'vector_column_name', knowledge_source.get('vector_column', 'v')
+            )
 
             result = self._vector_search(
-                table_name=knowledge_table[0],
+                table_name=knowledge_source.get('table', ''),
                 input=input,
                 **search_kwargs
             )

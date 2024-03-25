@@ -37,7 +37,7 @@ pyrag = PyRAG(
 #     model_name='gpt-3.5-turbo',
 #     name='Canada cities expert',
 #     system_role="You're an expert on Canadian cities, answer the user's questions like a geographer.",
-#     knowledge_tables=[['bc_canada_cities_csv']],
+#     knowledge_sources=[{'table': 'bc_canada_cities_csv'}],
 # )
 
 # chat_session = chat.create_session()
