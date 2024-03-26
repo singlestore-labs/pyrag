@@ -12,4 +12,4 @@ pip install pyrag
 
 ## Usage Example
 
-Examples of use are given at this [link](https://gitlab.com/singlestore/marketing/pyrag/-/tree/main/examples).
+Examples of use are given at this [link](https://github.com/singlestore-labs/pyrag/tree/main/examples).
