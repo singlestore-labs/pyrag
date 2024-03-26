@@ -8,10 +8,14 @@ load_dotenv()
 pyrag = PyRAG(
     connection_url=os.environ.get('DB_CONNECTION_URL', ''),
     embedding_model_name='text-embedding-3-small',
-    openai_api_key=os.environ.get('OPENAI_API_KEY'),
+    openai_api_key=os.environ.get('OPENAI_API_KEY', ''),
 )
 
-pyrag.files.s3().sync_files(
+pyrag.files.s3(
+    access_key_id=os.environ.get('AWS_ACCESS_KEY_ID', ''),
+    secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY', ''),
+    bucket_name=os.environ.get('AWS_BUCKET_NAME', ''),
+).sync_files(
     allowed_files=['bc-canada-cities.csv'],
     table_names={'bc-canada-cities.csv': 'bc_cities'}
 )

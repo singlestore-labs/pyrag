@@ -8,7 +8,7 @@ load_dotenv()
 pyrag = PyRAG(
     connection_url=os.environ.get('DB_CONNECTION_URL', ''),
     embedding_model_name='text-embedding-3-small',
-    openai_api_key=os.environ.get('OPENAI_API_KEY'),
+    openai_api_key=os.environ.get('OPENAI_API_KEY', ''),
 )
 
 pyrag.files.url.sync_file(url="https://www.gutenberg.org/cache/epub/48320/pg48320.txt", table_name='sherlock')

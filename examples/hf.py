@@ -10,7 +10,11 @@ pyrag = PyRAG(
     huggingfacehub_api_token=os.environ.get('HUGGINGFACEHUB_API_TOKEN')
 )
 
-pyrag.files.s3().sync_files(
+pyrag.files.s3(
+    access_key_id=os.environ.get('AWS_ACCESS_KEY_ID', ''),
+    secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY', ''),
+    bucket_name=os.environ.get('AWS_BUCKET_NAME', ''),
+).sync_files(
     allowed_files=['paragraph.txt'],
     table_names={'paragraph.txt': 'hf_paragraph_txt'}
 )
