@@ -54,7 +54,7 @@ pyrag.files.s3(
     table_names={'file_name_1': 'file_name_1'}
 ```
 
-### 4. Create a chat instance and chat Session
+### 4. Create a chat instance and chat session
 
 ```py
 chat = pyrag.chat.create(
