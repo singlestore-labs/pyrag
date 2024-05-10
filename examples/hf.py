@@ -26,4 +26,4 @@ chat = pyrag.chat.create(
 chat_session = chat.create_session()
 
 print(chat_session.send('What is this text about?'))
-print(chat_session.send('What was my last question?', retrive=False))
+print(chat_session.send('What was my last question?', retrieve=False))
