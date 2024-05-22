@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from io import BytesIO, StringIO
 from re import sub
 from typing import Optional
@@ -13,7 +13,7 @@ class File:
         self,
         name: str, content: str | StringIO | BytesIO,
         extension: Optional[str] = None,
-        updated_at: int = int(datetime.timestamp(datetime.now(UTC)))
+        updated_at: int = int(datetime.timestamp(datetime.now(timezone.utc)))
     ):
         self.name = name
         self.extension = extension or self.get_extension(name)
