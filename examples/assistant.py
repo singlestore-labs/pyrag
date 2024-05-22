@@ -26,5 +26,5 @@ chat = pyrag.chat.create(
 chat_session = chat.create_session(id=1)
 
 print(chat_session.send('What is Polaris?'))
-print(chat_session.send('What was my last question?', retrive=False))
-print(chat_session.send('What else can you tell me about this star?', retrive=False))
+print(chat_session.send('What was my last question?', retrieve=False))
+print(chat_session.send('What else can you tell me about this star?', retrieve=False))

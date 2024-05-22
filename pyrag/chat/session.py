@@ -120,12 +120,12 @@ class ChatSession:
     def send(
         self,
         input: str,
-        retrive: bool = True,
+        retrieve: bool = True,
         search_kwargs: dict[str, Any] = {}
     ):
         context = ''
 
-        if retrive:
+        if retrieve:
             context = self._search_context(input, search_kwargs=search_kwargs) or context
 
         return self.chain.predict(input=input, context=context)
